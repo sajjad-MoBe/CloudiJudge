@@ -1,8 +1,9 @@
 version: "3.3"
 services:
-    core:
-        build: './core'
-        container_name: 'core'
+    judge-server:
+        build: './judge'
+        container_name: 'judge-server'
+        command: 'serve'
         restart: 'always'
         expose:
             - 8000
