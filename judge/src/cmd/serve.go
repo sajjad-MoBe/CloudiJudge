@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/sajjad-MoBe/CloudiJudge/internal/serve"
 	"github.com/spf13/cobra"
 )
 
@@ -22,6 +23,6 @@ var serveCmd = &cobra.Command{
 		}
 
 		fmt.Println("server is listenint on port", port)
-
+		serve.StartListening(port)
 	},
 }

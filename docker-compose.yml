@@ -7,9 +7,3 @@ services:
         restart: 'always'
         expose:
             - 8000
-    nginx:
-        build: './nginx'
-        container_name: 'nginx'
-        restart: 'always'
-        ports:
-            - 443:443
