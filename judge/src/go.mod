@@ -1,4 +1,4 @@
-module github.com/sajjad-MoBe/CloudiJudge
+module github.com/sajjad-MoBe/CloudiJudge/judge/src
 
 go 1.23.6
 

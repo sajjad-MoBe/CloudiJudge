@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/sajjad-MoBe/CloudiJudge/internal/serve"
+	"github.com/sajjad-MoBe/CloudiJudge/judge/src/internal/serve"
 	"github.com/spf13/cobra"
 )
 
