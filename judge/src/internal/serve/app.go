@@ -14,6 +14,7 @@ func render(c *fiber.Ctx, name string, data interface{}) error {
 }
 
 func StartListening(port int) {
+	connectDatabase()
 	app := fiber.New(fiber.Config{
 		Views: html.New("static/views/", ".html"),
 	})
