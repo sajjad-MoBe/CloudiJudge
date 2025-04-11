@@ -126,7 +126,7 @@ func signupSubmitView(c *fiber.Ctx) error {
 	return c.Redirect("/problemset")
 }
 
-func signout(c *fiber.Ctx) error {
+func signoutView(c *fiber.Ctx) error {
 	sess, err := store.Get(c)
 	if err == nil {
 		sess.Destroy()
