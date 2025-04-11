@@ -55,21 +55,65 @@ func signinSubmitView(c *fiber.Ctx) error {
 	email := c.FormValue("email")
 	password := c.FormValue("password")
 
-	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
-	if err != nil {
-		setSigninError(c, email, "ایمیل یا رمز عبور وارد شده معتبر نمیباشد.")
-		c.Redirect("/signin")
-	}
-	password = string(hashedPassword)
-
 	// Validate user credentials
 	var user User
-	result := db.Where("email = ? AND password = ?", email, password).First(&user)
+	result := db.Where("email = ?", email).First(&user)
 	if result.Error != nil {
 		setSigninError(c, email, "ایمیل یا رمز عبور وارد شده معتبر نمیباشد.")
 		return c.Redirect("/signin")
 	}
+	err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password))
+	if err != nil {
+		setSigninError(c, email, "ایمیل یا رمز عبور وارد شده معتبر نمیباشد.")
+	}
 
+	sess, err := store.Get(c)
+	if err != nil {
+		setSigninError(c, email, "خطای ناشناخته ای رخ داد")
+		c.Redirect("/signin")
+	}
+	sess.Set("user_id", user.ID)
+	sess.Save()
+
+	// Redirect to the dashboard
+	return c.Redirect("/dashboard")
+}
+
+func signupSubmitView(c *fiber.Ctx) error {
+
+	// Parse form data
+	email := c.FormValue("email")
+	password := c.FormValue("password")
+	confirm_password := c.FormValue("confirm_password")
+
+	if password != confirm_password {
+		setSigninError(c, email, "رمز عبور و تایید آن یکسان نیستند.")
+		c.Redirect("/signin")
+	}
+
+	if !isSecurePassword(password) {
+		setSigninError(c, email, "رمز عبور انتخابی ایمن نیست.")
+		c.Redirect("/signin")
+	}
+
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
+	if err != nil {
+		setSigninError(c, email, "رمز عبور دیگری انتخاب کنید.")
+		c.Redirect("/signin")
+	}
+	password = string(hashedPassword)
+
+	var user User
+	result := db.Where("email = ?", email).First(&user)
+	if result.Error == nil {
+		setSigninError(c, email, "ایمیل وارد شده قبلا ثبت نام کرده است. لطفا وارد شوید.")
+		return c.Redirect("/signin")
+	}
+	db.Create(&User{
+		Email:    email,
+		Password: password,
+	})
+	db.Commit()
 	sess, err := store.Get(c)
 	if err != nil {
 		setSigninError(c, email, "خطای ناشناخته ای رخ داد")
