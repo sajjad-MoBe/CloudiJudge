@@ -23,17 +23,29 @@ func problemsetView(c *fiber.Ctx) error {
 }
 
 func signinView(c *fiber.Ctx) error {
+	var email string
 	var message string
+
 	sess, err := store.Get(c)
 	if err == nil {
-		message = sess.Get("siginError").(string)
-		sess.Delete("siginError")
-		sess.Save()
+		tmp := sess.Get("siginError")
+		if tmp != nil {
+			message = tmp.(string)
+			sess.Delete("siginError")
+			sess.Save()
+		}
+		tmp = sess.Get("email")
+		if tmp != nil {
+			email = tmp.(string)
+			sess.Delete("email")
+			sess.Save()
+		}
 	}
 
 	return render(c, "signin", fiber.Map{
 		"Title":   "CloudiJudge | ورود کاربر",
 		"Message": message,
+		"Email":   email,
 	})
 }
 
@@ -45,7 +57,7 @@ func signinSubmitView(c *fiber.Ctx) error {
 
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 	if err != nil {
-		setSigninError(c, "ایمیل یا رمز عبور وارد شده معتبر نمیباشد.")
+		setSigninError(c, email, "ایمیل یا رمز عبور وارد شده معتبر نمیباشد.")
 		c.Redirect("/signin")
 	}
 	password = string(hashedPassword)
@@ -54,13 +66,13 @@ func signinSubmitView(c *fiber.Ctx) error {
 	var user User
 	result := db.Where("email = ? AND password = ?", email, password).First(&user)
 	if result.Error != nil {
-		setSigninError(c, "ایمیل یا رمز عبور وارد شده معتبر نمیباشد.")
+		setSigninError(c, email, "ایمیل یا رمز عبور وارد شده معتبر نمیباشد.")
 		return c.Redirect("/signin")
 	}
 
 	sess, err := store.Get(c)
 	if err != nil {
-		setSigninError(c, "خطای ناشناخته ای رخ داد")
+		setSigninError(c, email, "خطای ناشناخته ای رخ داد")
 		c.Redirect("/signin")
 	}
 	sess.Set("user_id", user.ID)
@@ -81,10 +93,12 @@ func render(c *fiber.Ctx, name string, data interface{}) error {
 	return c.Render("pages/"+name, data, "layouts/main")
 }
 
-func setSigninError(c *fiber.Ctx, errMsg string) {
+func setSigninError(c *fiber.Ctx, email, errMsg string) {
 	sess, err := store.Get(c)
 	if err == nil {
 		sess.Set("siginError", errMsg)
+		sess.Set("email", email)
+
 		sess.Save()
 	}
 }
