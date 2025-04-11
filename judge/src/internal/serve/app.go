@@ -15,6 +15,8 @@ func render(c *fiber.Ctx, name string, data interface{}) error {
 
 func StartListening(port int) {
 	connectDatabase()
+	initSessionStore()
+
 	app := fiber.New(fiber.Config{
 		Views: html.New("static/views/", ".html"),
 	})
@@ -34,11 +36,7 @@ func StartListening(port int) {
 	})
 
 	// problemset
-	app.Get("/problemset", func(c *fiber.Ctx) error {
-		return render(c, "problemset", fiber.Map{
-			"Title": "CloudiJudge | سوالات",
-		})
-	})
+	app.Get("/problemset", isAuthenticated, problemsetView)
 
 	log.Fatal(app.Listen(fmt.Sprintf(":%d", port)))
 }
