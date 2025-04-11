@@ -1,0 +1,46 @@
+
+<body>
+    <h2 id="form-title">ورود</h2>
+    <div class="tab-links">
+        <div id="login-tab" class="tab-link active" onclick="showTab('login')">ورود</div>
+        <div id="signup-tab" class="tab-link" onclick="showTab('signup')">ثبت نام</div>
+    </div>
+
+    <form id="auth-form">
+        <div id="login" class="tab active">
+            <input type="email" id="login-email" placeholder="ایمیل" required>
+            <input type="password" id="login-password" placeholder="رمز عبور" required>
+            <button type="submit" id="login-button">ورود</button>
+        </div>
+
+        <div id="signup" class="tab">
+            <input type="email" id="signup-email" placeholder="ایمیل" required>
+            <input type="password" id="signup-password" placeholder="رمز عبور" required>
+            <input type="password" id="confirm-password" placeholder="تکرار رمز عبور" required>
+            <button type="submit" id="signup-button">ثبت نام</button>
+        </div>
+    </form>
+
+    <script>
+        function showTab(tabName) {
+            const tabs = document.querySelectorAll('.tab');
+            tabs.forEach(tab => {
+                tab.classList.remove('active');
+            });
+            document.getElementById(tabName).classList.add('active');
+
+            const loginTab = document.getElementById('login-tab');
+            const signupTab = document.getElementById('signup-tab');
+            loginTab.classList.remove('active');
+            signupTab.classList.remove('active');
+
+            if (tabName === 'login') {
+                loginTab.classList.add('active');
+                document.getElementById('form-title').textContent = 'ورود';
+            } else {
+                signupTab.classList.add('active');
+                document.getElementById('form-title').textContent = 'ثبت نام';
+            }
+        }
+    </script>
+</body>

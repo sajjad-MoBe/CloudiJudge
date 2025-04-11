@@ -21,7 +21,21 @@ func StartListening(port int) {
 	// Landing
 	app.Get("/", func(c *fiber.Ctx) error {
 		return render(c, "landing", fiber.Map{
-			"Title": "CloudiJudge",
+			"Title": "CloudiJudge | صفحه اصلی",
+		})
+	})
+
+	// signin
+	app.Get("/signin", func(c *fiber.Ctx) error {
+		return render(c, "signin", fiber.Map{
+			"Title": "CloudiJudge | ورود کاربر",
+		})
+	})
+
+	// problemset
+	app.Get("/problemset", func(c *fiber.Ctx) error {
+		return render(c, "problemset", fiber.Map{
+			"Title": "CloudiJudge | سوالات",
 		})
 	})
 
