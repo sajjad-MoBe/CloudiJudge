@@ -144,8 +144,8 @@ Follow these steps to set up and run the **CloudiJudge** project:
 		``docker-compose up -d``
 
 	- To force a rebuild of the application, add the `--build` flag:
-  
-	``docker-compose up -d --build``
+
+	  ``docker-compose up -d --build``
 
 4.  **Verify the Setup**
 	Once the containers are up, the application should be running and accessible as configured.
