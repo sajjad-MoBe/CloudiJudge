@@ -78,5 +78,74 @@ The compiled project contains the following commands:
 ## Getting Started
 
 ### Prerequisites
-- Go (version 1.18 or later) installed.
-- Docker (for code execution).
+Before you begin, ensure you have the following installed:
+
+- [Go](https://go.dev/) (version 1.23 or later)
+- [Docker](https://www.docker.com/)
+- [Docker Compose](https://docs.docker.com/compose/)
+
+### USAGE
+
+Follow these steps to set up and run the **CloudiJudge** project:
+
+  
+
+1.  **Clone the Repository**
+
+  
+
+	Clone the project to your local machine:
+	```bash
+
+	git clone https://github.com/sajjad-MoBe/CloudiJudge
+
+	cd CloudiJudge
+
+	```
+
+  
+
+2.  **Set Up Environment Variables**
+
+	Create a `.env` file by copying the provided `.env.example`:
+
+	```bash
+
+	cp .env.example .env
+
+	```
+
+	Edit the `.env` file to set the following variables:
+
+	-  `POSTGRES_USER`: Your PostgreSQL username
+
+	-  `POSTGRES_PASSWORD`: Your PostgreSQL password
+
+	-  `POSTGRES_DB`: Your PostgreSQL database name
+
+	-  `POSTGRES_DATA_FOLDER`: The folder for PostgreSQL data (e.g., `./postgres/data`)
+
+  
+
+3.  **Set Up Environment Variables**
+
+	Start the application using Docker Compose:
+
+	```bash
+
+	docker-compose up
+
+	```
+
+  
+	
+	- To run it in the background (detached mode), use:
+
+		``docker-compose up -d``
+
+	- To force a rebuild of the application, add the `--build` flag:
+
+	  ``docker-compose up -d --build``
+
+4.  **Verify the Setup**
+	Once the containers are up, the application should be running and accessible as configured.
