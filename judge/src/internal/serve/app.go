@@ -23,6 +23,7 @@ func StartListening(port int) {
 	app.Get("/signin", signinView)
 	app.Post("/signin", signinSubmitView)
 	app.Post("/signup", signupSubmitView)
+	app.Get("/signout", signout)
 
 	// problemset
 	app.Get("/problemset", isAuthenticated, problemsetView)

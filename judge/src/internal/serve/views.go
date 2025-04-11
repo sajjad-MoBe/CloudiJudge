@@ -75,8 +75,8 @@ func signinSubmitView(c *fiber.Ctx) error {
 	sess.Set("user_id", user.ID)
 	sess.Save()
 
-	// Redirect to the dashboard
-	return c.Redirect("/dashboard")
+	// Redirect to the problemset
+	return c.Redirect("/problemset")
 }
 
 func signupSubmitView(c *fiber.Ctx) error {
@@ -122,8 +122,17 @@ func signupSubmitView(c *fiber.Ctx) error {
 	sess.Set("user_id", user.ID)
 	sess.Save()
 
-	// Redirect to the dashboard
-	return c.Redirect("/dashboard")
+	// Redirect to the problemset
+	return c.Redirect("/problemset")
+}
+
+func signout(c *fiber.Ctx) error {
+	sess, err := store.Get(c)
+	if err == nil {
+		sess.Destroy()
+	}
+
+	return c.Redirect("/signin")
 }
 
 func landingView(c *fiber.Ctx) error {
