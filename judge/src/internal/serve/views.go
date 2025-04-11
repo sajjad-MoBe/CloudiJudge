@@ -1,6 +1,9 @@
 package serve
 
-import "github.com/gofiber/fiber/v2"
+import (
+	"github.com/gofiber/fiber/v2"
+	"golang.org/x/crypto/bcrypt"
+)
 
 func problemsetView(c *fiber.Ctx) error {
 
@@ -20,9 +23,51 @@ func problemsetView(c *fiber.Ctx) error {
 }
 
 func signinView(c *fiber.Ctx) error {
+	var message string
+	sess, err := store.Get(c)
+	if err == nil {
+		message = sess.Get("siginError").(string)
+		sess.Delete("siginError")
+		sess.Save()
+	}
+
 	return render(c, "signin", fiber.Map{
-		"Title": "CloudiJudge | ورود کاربر",
+		"Title":   "CloudiJudge | ورود کاربر",
+		"Message": message,
 	})
+}
+
+func signinSubmitView(c *fiber.Ctx) error {
+
+	// Parse form data
+	email := c.FormValue("email")
+	password := c.FormValue("password")
+
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
+	if err != nil {
+		setSigninError(c, "ایمیل یا رمز عبور وارد شده معتبر نمیباشد.")
+		c.Redirect("/signin")
+	}
+	password = string(hashedPassword)
+
+	// Validate user credentials
+	var user User
+	result := db.Where("email = ? AND password = ?", email, password).First(&user)
+	if result.Error != nil {
+		setSigninError(c, "ایمیل یا رمز عبور وارد شده معتبر نمیباشد.")
+		return c.Redirect("/signin")
+	}
+
+	sess, err := store.Get(c)
+	if err != nil {
+		setSigninError(c, "خطای ناشناخته ای رخ داد")
+		c.Redirect("/signin")
+	}
+	sess.Set("user_id", user.ID)
+	sess.Save()
+
+	// Redirect to the dashboard
+	return c.Redirect("/dashboard")
 }
 
 func landingView(c *fiber.Ctx) error {
@@ -34,4 +79,12 @@ func landingView(c *fiber.Ctx) error {
 // Template handling function
 func render(c *fiber.Ctx, name string, data interface{}) error {
 	return c.Render("pages/"+name, data, "layouts/main")
+}
+
+func setSigninError(c *fiber.Ctx, errMsg string) {
+	sess, err := store.Get(c)
+	if err == nil {
+		sess.Set("siginError", errMsg)
+		sess.Save()
+	}
 }
