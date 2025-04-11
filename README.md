@@ -65,7 +65,7 @@ The compiled project contains the following commands:
 
 - **serve**
   - Starts an HTTP Server based on a given configuration file.
-  - `listen` address is provided as an argument (e.g., `--listen :8080`).
+  - `listen` address is provided as an argument (e.g., `--listen=80`).
   - Configuration read via the `viper` package.
 
 - **code-runner**
