@@ -92,7 +92,7 @@ func signupSubmitView(c *fiber.Ctx) error {
 	}
 
 	if !isSecurePassword(password) {
-		setSigninError(c, email, "رمز عبور انتخابی ایمن نیست.")
+		setSigninError(c, email, "رمز عبور انتخابی باید حداقل به طول ۶ و شامل حروف و اعداد باشد.")
 		c.Redirect("/signin")
 	}
 
