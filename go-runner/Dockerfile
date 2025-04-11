@@ -1,3 +1,3 @@
-FROM golang:tip-alpine3.21
+FROM 1.24.2-alpine
 ADD ./src /src
 WORKDIR /src
