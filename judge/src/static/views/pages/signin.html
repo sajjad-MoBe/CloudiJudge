@@ -2,24 +2,30 @@
 <body>
     <h2 id="form-title">ورود</h2>
     <div class="tab-links">
-        <div id="login-tab" class="tab-link active" onclick="showTab('login')">ورود</div>
+        <div id="signin-tab" class="tab-link active" onclick="showTab('signin')">ورود</div>
         <div id="signup-tab" class="tab-link" onclick="showTab('signup')">ثبت نام</div>
     </div>
 
-    <form id="auth-form">
-        <div id="login" class="tab active">
-            <input type="email" id="login-email" placeholder="ایمیل" required>
-            <input type="password" id="login-password" placeholder="رمز عبور" required>
-            <button type="submit" id="login-button">ورود</button>
-        </div>
-
-        <div id="signup" class="tab">
-            <input type="email" id="signup-email" placeholder="ایمیل" required>
-            <input type="password" id="signup-password" placeholder="رمز عبور" required>
-            <input type="password" id="confirm-password" placeholder="تکرار رمز عبور" required>
-            <button type="submit" id="signup-button">ثبت نام</button>
+    <form id="signin-form" action="/signin" method="POST">
+        <div id="signin" class="tab active">
+            <input type="email" id="signin-email" name="email" placeholder="ایمیل" required>
+            <input type="password" id="signin-password" name="password" placeholder="رمز عبور" required>
+            <button type="submit" id="signin-button">ورود</button>
         </div>
     </form>
+
+    <form id="signup-form" action="/signup" method="POST">
+        <div id="signup" class="tab">
+            <input type="email" id="signup-email" name="email" placeholder="ایمیل" required>
+            <input type="password" id="signup-password" name="password" placeholder="رمز عبور" required>
+            <input type="password" id="confirm-password" name="confirm_password" placeholder="تکرار رمز عبور" required>
+            <button type="submit" id="signup-button">ثبت‌نام</button>
+        </div>
+    </form>
+    {{if .Message}}
+        <p style="color: red;">{{.Message}}</p>
+    {{end}}
+    
 
     <script>
         function showTab(tabName) {
@@ -29,13 +35,13 @@
             });
             document.getElementById(tabName).classList.add('active');
 
-            const loginTab = document.getElementById('login-tab');
+            const signinTab = document.getElementById('signin-tab');
             const signupTab = document.getElementById('signup-tab');
-            loginTab.classList.remove('active');
+            signinTab.classList.remove('active');
             signupTab.classList.remove('active');
 
-            if (tabName === 'login') {
-                loginTab.classList.add('active');
+            if (tabName === 'signin') {
+                signinTab.classList.add('active');
                 document.getElementById('form-title').textContent = 'ورود';
             } else {
                 signupTab.classList.add('active');

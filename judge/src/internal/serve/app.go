@@ -8,11 +8,6 @@ import (
 	"github.com/gofiber/template/html/v2"
 )
 
-// Template handling function
-func render(c *fiber.Ctx, name string, data interface{}) error {
-	return c.Render("pages/"+name, data, "layouts/main")
-}
-
 func StartListening(port int) {
 	connectDatabase()
 	initSessionStore()
@@ -22,18 +17,13 @@ func StartListening(port int) {
 	})
 
 	// Landing
-	app.Get("/", func(c *fiber.Ctx) error {
-		return render(c, "landing", fiber.Map{
-			"Title": "CloudiJudge | صفحه اصلی",
-		})
-	})
+	app.Get("/", landingView)
 
 	// signin
-	app.Get("/signin", func(c *fiber.Ctx) error {
-		return render(c, "signin", fiber.Map{
-			"Title": "CloudiJudge | ورود کاربر",
-		})
-	})
+	app.Get("/signin", signinView)
+	app.Post("/signin", signinSubmitView)
+	app.Post("/signup", signupSubmitView)
+	app.Get("/signout", signoutView)
 
 	// problemset
 	app.Get("/problemset", isAuthenticated, problemsetView)
