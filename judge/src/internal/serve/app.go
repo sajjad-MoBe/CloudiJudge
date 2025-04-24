@@ -15,6 +15,7 @@ func StartListening(port int) {
 	htmlEngine := html.New("static/views/", ".html")
 	htmlEngine.AddFunc("add", Add)
 	htmlEngine.AddFunc("sub", Sub)
+	htmlEngine.AddFunc("truncate", Truncate)
 
 	app := fiber.New(fiber.Config{
 		Views: htmlEngine,

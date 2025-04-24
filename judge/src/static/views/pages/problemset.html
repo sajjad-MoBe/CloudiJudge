@@ -1,17 +1,43 @@
 <body>
     <h1>soala</h1>
     <a href="/problemset/add" style="font-size: large;">sakht soal</a>
-    <br />
-    <br />
-    <a href="/problemset/1">soal 1</a>
-    <br />
-    <a href="/problemset/2">soal 2</a>
-    <br />
-    <a href="/problemset/3">soal 3</a>
-    <br />
-    <a href="/problemset/4">soal 4</a>
-    <br />
-    <br />
+
+    {{if eq .Total 0}}
+        <p>No problems are available at the moment. Please check back later!</p>
+    {{else}}
+        <table>
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Title</th>
+                    <th>Statement</th>
+                    <th>Time Limit (ms)</th>
+                    <th>Memory Limit (MB)</th>
+                </tr>
+            </thead>
+            <tbody>
+                {{range .Problems}}
+                <tr>
+                    <td>{{.ID}}</td>
+                    <td><a href="/problemset/{{.ID}}">{{.Title}}</a></td>
+                    <td>{{truncate .Statement 50}}</td>
+                    <td>{{.TimeLimit}}</td>
+                    <td>{{.MemoryLimit}}</td>
+                </tr>
+                {{end}}
+            </tbody>
+        </table>
+    {{ end }}
+
+    <div>
+        {{if gt .Offset 0}}
+        <a href="/problemset?limit={{.Limit}}&offset={{sub .Offset .Limit}}">Previous</a>
+        {{end}}
+
+        {{if lt (add .Offset .Limit) .Total}}
+        <a href="/problemset?limit={{.Limit}}&offset={{add .Offset .Limit}}">Next</a>
+        {{end}}
+    </div>
 
     <a href="/signout" style="font-size: large;">khorooj</a>
 </body>

@@ -155,18 +155,44 @@ func landingView(c *fiber.Ctx) error {
 
 func problemsetView(c *fiber.Ctx) error {
 
-	// Retrieve user ID from the session
 	userID := c.Locals("user_id").(uint)
 
-	// Fetch user details from the database
 	var user User
 	result := db.First(&user, userID)
 	if result.Error != nil {
 		return c.Status(fiber.StatusInternalServerError).SendString("خطا در دریافت اطلاعات کاربر")
 	}
+	limit := c.QueryInt("limit", 10)  // Default limit = 10
+	offset := c.QueryInt("offset", 0) // Default offset = 0
+
+	if limit > 100 {
+		limit = 100 // Max limit = 100
+	}
+	if offset < 0 {
+		offset = 0
+	}
+
+	var problems []Problem
+	var total int64
+
+	err := db.Model(&Problem{}).
+		Where("is_published = ?", true).
+		Count(&total).
+		Offset(offset).Limit(limit).
+		Find(&problems).Error
+
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": "Failed to fetch problems",
+		})
+	}
 
 	return render(c, "problemset", fiber.Map{
-		"PageTitle": "CloudiJudge | سوالات",
+		"Problems": problems,
+		"Total":    total,
+		"Limit":    limit,
+		"Offset":   offset,
+		"Pages":    (int(total) + limit - 1) / limit, // Total pages
 	})
 }
 
