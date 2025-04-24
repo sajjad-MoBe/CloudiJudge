@@ -1,5 +1,5 @@
 <body>
-    <h1>Create a New Problem</h1>
+    <h1>sakht Problem jadid</h1>
 
     {{if .error}}
         <div style="color: red;">{{.Error}}</div>
@@ -9,10 +9,10 @@
         <label for="title">Title:</label><br>
         <input type="text" id="title" name="title" value="{{.Title}}" required><br><br>
         
-        <label for="content">Content:</label><br>
-        <textarea id="content" name="content" required>{{.Content}}</textarea><br><br>
+        <label for="statement">Statement:</label><br>
+        <textarea id="statement" name="statement" required>{{.Statement}}</textarea><br><br>
         
-        <label for="time_limit">Time Limit (seconds):</label><br>
+        <label for="time_limit">Time Limit (milliseconds):</label><br>
         <input type="number" id="time_limit" name="time_limit" value="{{.TimeLimit}}" step="0" min="0"><br><br>
         
         <label for="memory_limit">Memory Limit (MB):</label><br>

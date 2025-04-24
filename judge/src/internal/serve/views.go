@@ -2,7 +2,6 @@ package serve
 
 import (
 	"fmt"
-	"net/http"
 	"os"
 	"path/filepath"
 	"strconv"
@@ -174,7 +173,7 @@ func handleAddProblemView(c *fiber.Ctx) error {
 	if c.FormValue("Pagetitle") == "" {
 		errorMsg = "عنوان وارد شده نامعتبر است."
 
-	} else if c.FormValue("content") == "" {
+	} else if c.FormValue("statement") == "" {
 		errorMsg = "توضیحات وارد شده نامعتبر است."
 
 	} else if parseFloat32(c.FormValue("time_limit")) <= 0 {
@@ -187,8 +186,8 @@ func handleAddProblemView(c *fiber.Ctx) error {
 
 		problem := Problem{
 			Title:       c.FormValue("Pagetitle"),
-			Content:     c.FormValue("content"),
-			TimeLimit:   parseFloat32(c.FormValue("time_limit")),
+			Statement:   c.FormValue("statement"),
+			TimeLimit:   parseInt(c.FormValue("time_limit")),
 			MemoryLimit: parseFloat32(c.FormValue("memory_limit")),
 			UserID:      c.Locals("user_id").(uint),
 		}
@@ -226,7 +225,7 @@ func handleAddProblemView(c *fiber.Ctx) error {
 		"PageTitle":   "CloudiJudge | ساخت سوال",
 		"Error":       errorMsg,
 		"Title":       c.FormValue("title"),
-		"Content":     c.FormValue("content"),
+		"Statement":   c.FormValue("statement"),
 		"TimeLimit":   c.FormValue("time_limit"),
 		"MemoryLimit": c.FormValue("memory_limit"),
 	})
@@ -235,18 +234,25 @@ func handleAddProblemView(c *fiber.Ctx) error {
 func showProblemView(c *fiber.Ctx) error {
 	id, err := strconv.Atoi(c.Params("id"))
 	if err != nil {
-		return c.Status(http.StatusBadRequest).JSON(fiber.Map{"error": "Invalid problem ID"})
+		return render(c, "error_404", fiber.Map{})
 	}
 
 	var problem Problem
 	if err := db.First(&problem, id).Error; err != nil {
-		return c.Status(http.StatusNotFound).JSON(fiber.Map{"error": "Problem not found"})
+		return render(c, "error_404", fiber.Map{})
 	}
-
+	var status string
+	if problem.IsPublished {
+		status = "Published"
+	} else {
+		status = "Draft"
+	}
 	return render(c, "show_problem", fiber.Map{
 		"PageTitle":   "CloudiJudge | مشاهده سوال",
+		"OwnerId":     problem.UserID,
 		"Title":       problem.Title,
-		"Content":     problem.Content,
+		"Status":      status,
+		"Statement":   problem.Statement,
 		"TimeLimit":   problem.TimeLimit,
 		"MemoryLimit": problem.MemoryLimit,
 		"InputFile":   "problem.InputFile",
