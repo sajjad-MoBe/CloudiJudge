@@ -1,25 +1,28 @@
 package serve
 
 import (
+	"fmt"
+	"net/http"
+	"os"
+	"path/filepath"
+	"strconv"
+
 	"github.com/gofiber/fiber/v2"
 	"golang.org/x/crypto/bcrypt"
 )
 
-func problemsetView(c *fiber.Ctx) error {
+// Template handling function
+func render(c *fiber.Ctx, name string, data interface{}) error {
+	return c.Render("pages/"+name, data, "layouts/main")
+}
 
-	// Retrieve user ID from the session
-	userID := c.Locals("user_id")
-
-	// Fetch user details from the database
-	var user User
-	result := db.First(&user, userID)
-	if result.Error != nil {
-		return c.Status(fiber.StatusInternalServerError).SendString("خطا در دریافت اطلاعات کاربر")
+func setSigninError(c *fiber.Ctx, email, errMsg string) {
+	sess, err := store.Get(c)
+	if err == nil {
+		sess.Set("siginError", errMsg)
+		sess.Set("email", email)
+		sess.Save()
 	}
-
-	return render(c, "problemset", fiber.Map{
-		"Title": "CloudiJudge | سوالات",
-	})
 }
 
 func signinView(c *fiber.Ctx) error {
@@ -43,13 +46,13 @@ func signinView(c *fiber.Ctx) error {
 	}
 
 	return render(c, "signin", fiber.Map{
-		"Title":   "CloudiJudge | ورود کاربر",
-		"Message": message,
-		"Email":   email,
+		"PageTitle": "CloudiJudge | ورود کاربر",
+		"Message":   message,
+		"Email":     email,
 	})
 }
 
-func signinSubmitView(c *fiber.Ctx) error {
+func handleSigninView(c *fiber.Ctx) error {
 
 	// Parse form data
 	email := c.FormValue("email")
@@ -79,7 +82,7 @@ func signinSubmitView(c *fiber.Ctx) error {
 	return c.Redirect("/problemset")
 }
 
-func signupSubmitView(c *fiber.Ctx) error {
+func handleSignupView(c *fiber.Ctx) error {
 
 	// Parse form data
 	email := c.FormValue("email")
@@ -137,21 +140,116 @@ func signoutView(c *fiber.Ctx) error {
 
 func landingView(c *fiber.Ctx) error {
 	return render(c, "landing", fiber.Map{
-		"Title": "CloudiJudge | صفحه اصلی",
+		"PageTitle": "CloudiJudge | صفحه اصلی",
 	})
 }
 
-// Template handling function
-func render(c *fiber.Ctx, name string, data interface{}) error {
-	return c.Render("pages/"+name, data, "layouts/main")
+func problemsetView(c *fiber.Ctx) error {
+
+	// Retrieve user ID from the session
+	userID := c.Locals("user_id")
+
+	// Fetch user details from the database
+	var user User
+	result := db.First(&user, userID)
+	if result.Error != nil {
+		return c.Status(fiber.StatusInternalServerError).SendString("خطا در دریافت اطلاعات کاربر")
+	}
+
+	return render(c, "problemset", fiber.Map{
+		"PageTitle": "CloudiJudge | سوالات",
+	})
 }
 
-func setSigninError(c *fiber.Ctx, email, errMsg string) {
-	sess, err := store.Get(c)
-	if err == nil {
-		sess.Set("siginError", errMsg)
-		sess.Set("email", email)
+func addProblemView(c *fiber.Ctx) error {
 
-		sess.Save()
+	return render(c, "add_problem", fiber.Map{
+		"PageTitle": "CloudiJudge | ساخت سوال",
+	})
+}
+
+func handleAddProblemView(c *fiber.Ctx) error {
+	var errorMsg string = ""
+
+	if c.FormValue("Pagetitle") == "" {
+		errorMsg = "عنوان وارد شده نامعتبر است."
+
+	} else if c.FormValue("content") == "" {
+		errorMsg = "توضیحات وارد شده نامعتبر است."
+
+	} else if parseFloat32(c.FormValue("time_limit")) <= 0 {
+		errorMsg = "محدودیت زمانی باید یک عدد مثبت باشد."
+
+	} else if parseFloat32(c.FormValue("memory_limit")) <= 0 {
+		errorMsg = "محدودیت حافظه باید یک عدد مثبت باشد."
+
+	} else {
+
+		problem := Problem{
+			Title:       c.FormValue("Pagetitle"),
+			Content:     c.FormValue("content"),
+			TimeLimit:   parseFloat32(c.FormValue("time_limit")),
+			MemoryLimit: parseFloat32(c.FormValue("memory_limit")),
+			UserID:      c.Locals("user_id").(uint),
+		}
+
+		// Save the problem to the database
+		if err := db.Create(&problem).Error; err != nil {
+			fmt.Println(err)
+			errorMsg = "خطایی در ذخیره سوال رخ داد."
+		} else {
+			problemDir := filepath.Join(os.Getenv("PROBLEM_UPLOAD_FOLDER"), fmt.Sprintf("%d", problem.ID))
+			if err := os.MkdirAll(problemDir, os.ModePerm); err != nil {
+				errorMsg = "خطایی در ایجاد سوال رخ داد."
+
+			} else if inputFile, err := c.FormFile("input_file"); err != nil {
+				errorMsg = "فایل ورودی ها نامعتبر است."
+
+			} else if outputFile, err := c.FormFile("output_file"); err != nil {
+				errorMsg = "فایل خروجی ها نامعتبر است."
+
+			} else if err := c.SaveFile(inputFile, filepath.Join(problemDir, "input.txt")); err != nil {
+				fmt.Println(err)
+				errorMsg = "خطایی در ذخیره فایل ورودی ها رخ داد."
+
+			} else if err := c.SaveFile(outputFile, filepath.Join(problemDir, "output.txt")); err != nil {
+				fmt.Println(err)
+				errorMsg = "خطایی در ذخیره فایل خروجی ها رخ داد."
+			} else {
+				return c.Redirect(fmt.Sprintf("/problemset/%d", problem.ID))
+			}
+
+		}
 	}
+
+	return render(c, "add_problem", fiber.Map{
+		"PageTitle":   "CloudiJudge | ساخت سوال",
+		"Error":       errorMsg,
+		"Title":       c.FormValue("title"),
+		"Content":     c.FormValue("content"),
+		"TimeLimit":   c.FormValue("time_limit"),
+		"MemoryLimit": c.FormValue("memory_limit"),
+	})
+}
+
+func showProblemView(c *fiber.Ctx) error {
+	id, err := strconv.Atoi(c.Params("id"))
+	if err != nil {
+		return c.Status(http.StatusBadRequest).JSON(fiber.Map{"error": "Invalid problem ID"})
+	}
+
+	var problem Problem
+	if err := db.First(&problem, id).Error; err != nil {
+		return c.Status(http.StatusNotFound).JSON(fiber.Map{"error": "Problem not found"})
+	}
+
+	return render(c, "show_problem", fiber.Map{
+		"PageTitle":   "CloudiJudge | مشاهده سوال",
+		"Title":       problem.Title,
+		"Content":     problem.Content,
+		"TimeLimit":   problem.TimeLimit,
+		"MemoryLimit": problem.MemoryLimit,
+		"InputFile":   "problem.InputFile",
+		"OutputFile":  "problem.OutputFile",
+	})
 }

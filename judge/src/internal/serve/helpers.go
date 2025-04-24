@@ -1,6 +1,9 @@
 package serve
 
-import "unicode"
+import (
+	"fmt"
+	"unicode"
+)
 
 func isSecurePassword(password string) bool {
 	if len(password) <= 6 {
@@ -19,4 +22,13 @@ func isSecurePassword(password string) bool {
 	}
 
 	return hasLetter && hasNumber
+}
+
+func parseFloat32(value string) float32 {
+	if value == "" {
+		return 0
+	}
+	var result float32
+	fmt.Sscanf(value, "%f", &result)
+	return result
 }
