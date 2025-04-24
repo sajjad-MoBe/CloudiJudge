@@ -179,6 +179,7 @@ func problemsetView(c *fiber.Ctx) error {
 		Where("is_published = ?", true).
 		Count(&total).
 		Offset(offset).Limit(limit).
+		Order("published_at DESC").
 		Find(&problems).Error
 
 	if err != nil {
@@ -429,7 +430,7 @@ func downloadProblemInOutFiles(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusInternalServerError).SendString("خطا در دریافت اطلاعات کاربر")
 	}
 	if !problem.IsPublished && problem.OwnerID != user.ID && !user.IsAdmin {
-		return error_404(c)
+		return error_403(c)
 	}
 
 	filePath := filepath.Join(os.Getenv("PROBLEM_UPLOAD_FOLDER"), fmt.Sprintf("%d/%s", problem.ID, filename))
@@ -470,7 +471,8 @@ func handlePublishProblemView(c *fiber.Ctx) error {
 	if command == "publish" {
 		if !problem.IsPublished {
 			problem.IsPublished = true
-			problem.PublishedAt = time.Now()
+			now := time.Now()
+			problem.PublishedAt = &now
 		}
 	} else {
 		problem.IsPublished = false
