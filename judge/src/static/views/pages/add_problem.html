@@ -1,0 +1,24 @@
+<body>
+    <h1>Create a New Problem</h1>
+    <form action="/save-problem" method="POST" enctype="multipart/form-data">
+        <label for="title">Title:</label><br>
+        <input type="text" id="title" name="title" required><br><br>
+        
+        <label for="content">Content:</label><br>
+        <textarea id="content" name="content" required></textarea><br><br>
+        
+        <label for="time_limit">Time Limit (seconds):</label><br>
+        <input type="number" id="time_limit" name="time_limit" value="0"><br><br>
+        
+        <label for="memory_limit">Memory Limit (MB):</label><br>
+        <input type="number" id="memory_limit" name="memory_limit" value="0"><br><br>
+        
+        <label for="input_file">Input File:</label><br>
+        <input type="file" id="input_file" name="input_file" required><br><br>
+        
+        <label for="output_file">Output File:</label><br>
+        <input type="file" id="output_file" name="output_file" required><br><br>
+        
+        <button type="submit">Create Problem</button>
+    </form>
+</body>
