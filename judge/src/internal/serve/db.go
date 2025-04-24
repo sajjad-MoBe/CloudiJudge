@@ -23,8 +23,6 @@ func connectDatabase() {
 		log.Fatalf("Failed to connect to database: %v", err)
 		os.Exit(1)
 	}
-
-	// Automatically migrate the User model
 	err = db.AutoMigrate(&User{}, &Problem{})
 	if err != nil {
 		log.Fatalf("Failed to migrate database: %v", err)

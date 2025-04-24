@@ -206,7 +206,7 @@ func addProblemView(c *fiber.Ctx) error {
 func handleAddProblemView(c *fiber.Ctx) error {
 	var errorMsg string = ""
 
-	if c.FormValue("Pagetitle") == "" {
+	if c.FormValue("title") == "" {
 		errorMsg = "عنوان وارد شده نامعتبر است."
 
 	} else if c.FormValue("statement") == "" {
@@ -221,7 +221,7 @@ func handleAddProblemView(c *fiber.Ctx) error {
 	} else {
 
 		problem := Problem{
-			Title:       c.FormValue("Pagetitle"),
+			Title:       c.FormValue("title"),
 			Statement:   c.FormValue("statement"),
 			TimeLimit:   parseInt(c.FormValue("time_limit")),
 			MemoryLimit: parseFloat32(c.FormValue("memory_limit")),
@@ -230,7 +230,6 @@ func handleAddProblemView(c *fiber.Ctx) error {
 
 		// Save the problem to the database
 		if err := db.Create(&problem).Error; err != nil {
-			fmt.Println(err)
 			errorMsg = "خطایی در ذخیره سوال رخ داد."
 		} else {
 			problemDir := filepath.Join(os.Getenv("PROBLEM_UPLOAD_FOLDER"), fmt.Sprintf("%d", problem.ID))
@@ -253,10 +252,10 @@ func handleAddProblemView(c *fiber.Ctx) error {
 			} else {
 				return c.Redirect(fmt.Sprintf("/problemset/%d", problem.ID))
 			}
+			db.Delete(&problem)
 
 		}
 	}
-
 	return render(c, "add_problem", fiber.Map{
 		"PageTitle":   "CloudiJudge | ساخت سوال",
 		"Error":       errorMsg,

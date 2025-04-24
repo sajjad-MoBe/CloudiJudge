@@ -1,16 +1,16 @@
 <body>
     <h1>sakht Problem jadid</h1>
 
-    {{if .error}}
+    {{if .Error}}
         <div style="color: red;">{{.Error}}</div>
     {{end}}
 
     <form action="/problemset/add" method="POST" enctype="multipart/form-data">
         <label for="title">Title:</label><br>
-        <input type="text" id="title" name="title" value="{{.Title}}" required><br><br>
+        <input type="text" id="title" name="title" value="{{.Title}}"><br><br>
         
         <label for="statement">Statement:</label><br>
-        <textarea id="statement" name="statement" required>{{.Statement}}</textarea><br><br>
+        <textarea id="statement" name="statement">{{.Statement}}</textarea><br><br>
         
         <label for="time_limit">Time Limit (milliseconds):</label><br>
         <input type="number" id="time_limit" name="time_limit" value="{{.TimeLimit}}" step="0" min="0"><br><br>
@@ -19,10 +19,10 @@
         <input type="number" id="memory_limit" name="memory_limit" value="{{.MemoryLimit}}" step="0" min="0"><br><br>
         
         <label for="input_file">Input File:</label><br>
-        <input type="file" id="input_file" name="input_file" required><br><br>
+        <input type="file" id="input_file" name="input_file"><br><br>
         
         <label for="output_file">Output File:</label><br>
-        <input type="file" id="output_file" name="output_file" required><br><br>
+        <input type="file" id="output_file" name="output_file"><br><br>
         
         <button type="submit">Create Problem</button>
     </form>
