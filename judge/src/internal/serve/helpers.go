@@ -2,6 +2,7 @@ package serve
 
 import (
 	"fmt"
+	"strconv"
 	"unicode"
 )
 
@@ -31,4 +32,27 @@ func parseFloat32(value string) float32 {
 	var result float32
 	fmt.Sscanf(value, "%f", &result)
 	return result
+}
+
+func parseInt(value string) int {
+	ress, err := strconv.Atoi(value)
+	if err != nil {
+		return 0
+	}
+	return ress
+}
+
+func Add(a, b int) int {
+	return a + b
+}
+
+func Sub(a, b int) int {
+	return a - b
+}
+
+func Truncate(s string, maxLength int) string {
+	if len(s) > maxLength {
+		return s[:maxLength] + "..."
+	}
+	return s
 }

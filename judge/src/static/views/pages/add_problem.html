@@ -1,29 +1,48 @@
 <body>
-    <h1>Create a New Problem</h1>
+    {{ if .Edit }}
+        <h1>edit Problem</h1>
+    {{ else }}
+        <h1>sakht Problem jadid</h1>
+    {{ end }}
 
-    {{if .error}}
+    {{if .Error}}
         <div style="color: red;">{{.Error}}</div>
     {{end}}
 
-    <form action="/problemset/add" method="POST" enctype="multipart/form-data">
+    <form 
+        action="{{if .Edit}}/problemset/{{.ProblemID}}/edit{{else}}/problemset/add{{end}}"
+        method="POST" enctype="multipart/form-data"
+    >
         <label for="title">Title:</label><br>
-        <input type="text" id="title" name="title" value="{{.Title}}" required><br><br>
+        <input type="text" id="title" name="title" value="{{.Title}}"><br><br>
         
-        <label for="content">Content:</label><br>
-        <textarea id="content" name="content" required>{{.Content}}</textarea><br><br>
+        <label for="statement">Statement:</label><br>
+        <textarea id="statement" name="statement">{{.Statement}}</textarea><br><br>
         
-        <label for="time_limit">Time Limit (seconds):</label><br>
+        <label for="time_limit">Time Limit (milliseconds):</label><br>
         <input type="number" id="time_limit" name="time_limit" value="{{.TimeLimit}}" step="0" min="0"><br><br>
         
         <label for="memory_limit">Memory Limit (MB):</label><br>
         <input type="number" id="memory_limit" name="memory_limit" value="{{.MemoryLimit}}" step="0" min="0"><br><br>
         
-        <label for="input_file">Input File:</label><br>
-        <input type="file" id="input_file" name="input_file" required><br><br>
-        
-        <label for="output_file">Output File:</label><br>
-        <input type="file" id="output_file" name="output_file" required><br><br>
-        
-        <button type="submit">Create Problem</button>
+        {{ if .Edit }}
+            <label for="input_file">Input File:</label><br>
+            <input type="file" id="input_file" name="input_file">
+                <a href="/problemset/{{.ProblemID}}/dl/input.txt" target="_blank">click to download</a>
+            <br><br>
+            
+            <label for="output_file">Output File:</label><br>
+            <input type="file" id="output_file" name="output_file">
+                <a href="/problemset/{{.ProblemID}}/dl/output.txt" target="_blank">click to download</a>
+            <br><br>
+            <button type="submit">Edit Problem</button>
+        {{ else }}
+            <label for="input_file">Input File:</label><br>
+            <input type="file" id="input_file" name="input_file"><br><br>
+            
+            <label for="output_file">Output File:</label><br>
+            <input type="file" id="output_file" name="output_file"><br><br>
+            <button type="submit">Create Problem</button>
+        {{ end }}
     </form>
 </body>
