@@ -5,21 +5,19 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-func problemsetView(c *fiber.Ctx) error {
+// Template handling function
+func render(c *fiber.Ctx, name string, data interface{}) error {
+	return c.Render("pages/"+name, data, "layouts/main")
+}
 
-	// Retrieve user ID from the session
-	userID := c.Locals("user_id")
+func setSigninError(c *fiber.Ctx, email, errMsg string) {
+	sess, err := store.Get(c)
+	if err == nil {
+		sess.Set("siginError", errMsg)
+		sess.Set("email", email)
 
-	// Fetch user details from the database
-	var user User
-	result := db.First(&user, userID)
-	if result.Error != nil {
-		return c.Status(fiber.StatusInternalServerError).SendString("خطا در دریافت اطلاعات کاربر")
+		sess.Save()
 	}
-
-	return render(c, "problemset", fiber.Map{
-		"Title": "CloudiJudge | سوالات",
-	})
 }
 
 func signinView(c *fiber.Ctx) error {
@@ -141,17 +139,26 @@ func landingView(c *fiber.Ctx) error {
 	})
 }
 
-// Template handling function
-func render(c *fiber.Ctx, name string, data interface{}) error {
-	return c.Render("pages/"+name, data, "layouts/main")
+func problemsetView(c *fiber.Ctx) error {
+
+	// Retrieve user ID from the session
+	userID := c.Locals("user_id")
+
+	// Fetch user details from the database
+	var user User
+	result := db.First(&user, userID)
+	if result.Error != nil {
+		return c.Status(fiber.StatusInternalServerError).SendString("خطا در دریافت اطلاعات کاربر")
+	}
+
+	return render(c, "problemset", fiber.Map{
+		"Title": "CloudiJudge | سوالات",
+	})
 }
 
-func setSigninError(c *fiber.Ctx, email, errMsg string) {
-	sess, err := store.Get(c)
-	if err == nil {
-		sess.Set("siginError", errMsg)
-		sess.Set("email", email)
+func addProblemView(c *fiber.Ctx) error {
 
-		sess.Save()
-	}
+	return render(c, "add_problem", fiber.Map{
+		"Title": "CloudiJudge | ساخت سوال",
+	})
 }

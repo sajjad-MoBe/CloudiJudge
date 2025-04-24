@@ -28,5 +28,7 @@ func StartListening(port int) {
 	// problemset
 	app.Get("/problemset", isAuthenticated, problemsetView)
 
+	app.Get("/problemset/add", isAuthenticated, addProblemView)
+
 	log.Fatal(app.Listen(fmt.Sprintf(":%d", port)))
 }
