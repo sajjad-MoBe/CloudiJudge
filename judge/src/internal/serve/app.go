@@ -21,14 +21,16 @@ func StartListening(port int) {
 
 	// signin
 	app.Get("/signin", signinView)
-	app.Post("/signin", signinSubmitView)
-	app.Post("/signup", signupSubmitView)
+	app.Post("/signin", handleSigninView)
+	app.Post("/signup", handleSignupView)
 	app.Get("/signout", signoutView)
 
 	// problemset
 	app.Get("/problemset", isAuthenticated, problemsetView)
 
 	app.Get("/problemset/add", isAuthenticated, addProblemView)
+	app.Post("/problemset/add", isAuthenticated, handleAddProblemView)
 
 	log.Fatal(app.Listen(fmt.Sprintf(":%d", port)))
+
 }

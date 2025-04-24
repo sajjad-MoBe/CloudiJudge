@@ -1,6 +1,10 @@
 package serve
 
 import (
+	"fmt"
+	"os"
+	"path/filepath"
+
 	"github.com/gofiber/fiber/v2"
 	"golang.org/x/crypto/bcrypt"
 )
@@ -15,7 +19,6 @@ func setSigninError(c *fiber.Ctx, email, errMsg string) {
 	if err == nil {
 		sess.Set("siginError", errMsg)
 		sess.Set("email", email)
-
 		sess.Save()
 	}
 }
@@ -47,7 +50,7 @@ func signinView(c *fiber.Ctx) error {
 	})
 }
 
-func signinSubmitView(c *fiber.Ctx) error {
+func handleSigninView(c *fiber.Ctx) error {
 
 	// Parse form data
 	email := c.FormValue("email")
@@ -77,7 +80,7 @@ func signinSubmitView(c *fiber.Ctx) error {
 	return c.Redirect("/problemset")
 }
 
-func signupSubmitView(c *fiber.Ctx) error {
+func handleSignupView(c *fiber.Ctx) error {
 
 	// Parse form data
 	email := c.FormValue("email")
@@ -160,5 +163,69 @@ func addProblemView(c *fiber.Ctx) error {
 
 	return render(c, "add_problem", fiber.Map{
 		"Title": "CloudiJudge | ساخت سوال",
+	})
+}
+
+func handleAddProblemView(c *fiber.Ctx) error {
+	var errorMsg string = ""
+
+	if c.FormValue("title") == "" {
+		errorMsg = "عنوان وارد شده نامعتبر است."
+
+	} else if c.FormValue("content") == "" {
+		errorMsg = "توضیحات وارد شده نامعتبر است."
+
+	} else if parseFloat32(c.FormValue("time_limit")) <= 0 {
+		errorMsg = "محدودیت زمانی باید یک عدد مثبت باشد."
+
+	} else if parseFloat32(c.FormValue("memory_limit")) <= 0 {
+		errorMsg = "محدودیت حافظه باید یک عدد مثبت باشد."
+
+	} else {
+
+		problem := Problem{
+			Title:       c.FormValue("title"),
+			Content:     c.FormValue("content"),
+			TimeLimit:   parseFloat32(c.FormValue("time_limit")),
+			MemoryLimit: parseFloat32(c.FormValue("memory_limit")),
+			UserID:      c.Locals("user_id").(uint),
+		}
+
+		// Save the problem to the database
+		if err := db.Create(&problem).Error; err != nil {
+			fmt.Println(err)
+			errorMsg = "خطایی در ذخیره سوال رخ داد."
+		} else {
+			problemDir := filepath.Join(os.Getenv("PROBLEM_UPLOAD_FOLDER"), fmt.Sprintf("%d", problem.ID))
+			if err := os.MkdirAll(problemDir, os.ModePerm); err != nil {
+				errorMsg = "خطایی در ایجاد سوال رخ داد."
+
+			} else if inputFile, err := c.FormFile("input_file"); err != nil {
+				errorMsg = "فایل ورودی ها نامعتبر است."
+
+			} else if outputFile, err := c.FormFile("output_file"); err != nil {
+				errorMsg = "فایل خروجی ها نامعتبر است."
+
+			} else if err := c.SaveFile(inputFile, filepath.Join(problemDir, "input.txt")); err != nil {
+				fmt.Println(err)
+				errorMsg = "خطایی در ذخیره فایل ورودی ها رخ داد."
+
+			} else if err := c.SaveFile(outputFile, filepath.Join(problemDir, "output.txt")); err != nil {
+				fmt.Println(err)
+				errorMsg = "خطایی در ذخیره فایل خروجی ها رخ داد."
+			} else {
+				return c.Redirect(fmt.Sprintf("/problemset/%d", problem.ID))
+			}
+
+		}
+	}
+
+	return render(c, "add_problem", fiber.Map{
+		"Title":       "CloudiJudge | ساخت سوال",
+		"error":       errorMsg,
+		"title":       c.FormValue("title"),
+		"content":     c.FormValue("content"),
+		"timeLimit":   c.FormValue("time_limit"),
+		"memoryLimit": c.FormValue("memory_limit"),
 	})
 }

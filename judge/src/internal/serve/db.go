@@ -25,7 +25,7 @@ func connectDatabase() {
 	}
 
 	// Automatically migrate the User model
-	err = db.AutoMigrate(&User{})
+	err = db.AutoMigrate(&User{}, &Problem{})
 	if err != nil {
 		log.Fatalf("Failed to migrate database: %v", err)
 		os.Exit(1)
