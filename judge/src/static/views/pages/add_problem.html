@@ -2,21 +2,21 @@
     <h1>Create a New Problem</h1>
 
     {{if .error}}
-        <div style="color: red;">{{.error}}</div>
+        <div style="color: red;">{{.Error}}</div>
     {{end}}
 
     <form action="/problemset/add" method="POST" enctype="multipart/form-data">
         <label for="title">Title:</label><br>
-        <input type="text" id="title" name="title" value="{{.title}}" required><br><br>
+        <input type="text" id="title" name="title" value="{{.Title}}" required><br><br>
         
         <label for="content">Content:</label><br>
-        <textarea id="content" name="content" required>{{.content}}</textarea><br><br>
+        <textarea id="content" name="content" required>{{.Content}}</textarea><br><br>
         
         <label for="time_limit">Time Limit (seconds):</label><br>
-        <input type="number" id="time_limit" name="time_limit" value="{{.timeLimit}}" step="0" min="0"><br><br>
+        <input type="number" id="time_limit" name="time_limit" value="{{.TimeLimit}}" step="0" min="0"><br><br>
         
         <label for="memory_limit">Memory Limit (MB):</label><br>
-        <input type="number" id="memory_limit" name="memory_limit" value="{{.memoryLimit}}" step="0" min="0"><br><br>
+        <input type="number" id="memory_limit" name="memory_limit" value="{{.MemoryLimit}}" step="0" min="0"><br><br>
         
         <label for="input_file">Input File:</label><br>
         <input type="file" id="input_file" name="input_file" required><br><br>

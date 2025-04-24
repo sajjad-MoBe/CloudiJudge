@@ -2,8 +2,10 @@ package serve
 
 import (
 	"fmt"
+	"net/http"
 	"os"
 	"path/filepath"
+	"strconv"
 
 	"github.com/gofiber/fiber/v2"
 	"golang.org/x/crypto/bcrypt"
@@ -44,9 +46,9 @@ func signinView(c *fiber.Ctx) error {
 	}
 
 	return render(c, "signin", fiber.Map{
-		"Title":   "CloudiJudge | ورود کاربر",
-		"Message": message,
-		"Email":   email,
+		"PageTitle": "CloudiJudge | ورود کاربر",
+		"Message":   message,
+		"Email":     email,
 	})
 }
 
@@ -138,7 +140,7 @@ func signoutView(c *fiber.Ctx) error {
 
 func landingView(c *fiber.Ctx) error {
 	return render(c, "landing", fiber.Map{
-		"Title": "CloudiJudge | صفحه اصلی",
+		"PageTitle": "CloudiJudge | صفحه اصلی",
 	})
 }
 
@@ -155,21 +157,21 @@ func problemsetView(c *fiber.Ctx) error {
 	}
 
 	return render(c, "problemset", fiber.Map{
-		"Title": "CloudiJudge | سوالات",
+		"PageTitle": "CloudiJudge | سوالات",
 	})
 }
 
 func addProblemView(c *fiber.Ctx) error {
 
 	return render(c, "add_problem", fiber.Map{
-		"Title": "CloudiJudge | ساخت سوال",
+		"PageTitle": "CloudiJudge | ساخت سوال",
 	})
 }
 
 func handleAddProblemView(c *fiber.Ctx) error {
 	var errorMsg string = ""
 
-	if c.FormValue("title") == "" {
+	if c.FormValue("Pagetitle") == "" {
 		errorMsg = "عنوان وارد شده نامعتبر است."
 
 	} else if c.FormValue("content") == "" {
@@ -184,7 +186,7 @@ func handleAddProblemView(c *fiber.Ctx) error {
 	} else {
 
 		problem := Problem{
-			Title:       c.FormValue("title"),
+			Title:       c.FormValue("Pagetitle"),
 			Content:     c.FormValue("content"),
 			TimeLimit:   parseFloat32(c.FormValue("time_limit")),
 			MemoryLimit: parseFloat32(c.FormValue("memory_limit")),
@@ -221,11 +223,33 @@ func handleAddProblemView(c *fiber.Ctx) error {
 	}
 
 	return render(c, "add_problem", fiber.Map{
-		"Title":       "CloudiJudge | ساخت سوال",
-		"error":       errorMsg,
-		"title":       c.FormValue("title"),
-		"content":     c.FormValue("content"),
-		"timeLimit":   c.FormValue("time_limit"),
-		"memoryLimit": c.FormValue("memory_limit"),
+		"PageTitle":   "CloudiJudge | ساخت سوال",
+		"Error":       errorMsg,
+		"Title":       c.FormValue("title"),
+		"Content":     c.FormValue("content"),
+		"TimeLimit":   c.FormValue("time_limit"),
+		"MemoryLimit": c.FormValue("memory_limit"),
+	})
+}
+
+func showProblemView(c *fiber.Ctx) error {
+	id, err := strconv.Atoi(c.Params("id"))
+	if err != nil {
+		return c.Status(http.StatusBadRequest).JSON(fiber.Map{"error": "Invalid problem ID"})
+	}
+
+	var problem Problem
+	if err := db.First(&problem, id).Error; err != nil {
+		return c.Status(http.StatusNotFound).JSON(fiber.Map{"error": "Problem not found"})
+	}
+
+	return render(c, "show_problem", fiber.Map{
+		"PageTitle":   "CloudiJudge | مشاهده سوال",
+		"Title":       problem.Title,
+		"Content":     problem.Content,
+		"TimeLimit":   problem.TimeLimit,
+		"MemoryLimit": problem.MemoryLimit,
+		"InputFile":   "problem.InputFile",
+		"OutputFile":  "problem.OutputFile",
 	})
 }
