@@ -14,6 +14,9 @@
             {{ end }}
         {{ end }}
     </h1>
+    {{ if or .User.IsAdmin ( eq .User.ID .Problem.OwnerID) }}
+        <a href="/problemset/{{.Problem.ID}}/edit"> edit </a>
+    {{ end }}
     <p><strong>Statement:</strong> {{.Problem.Statement}}</p>
     <p><strong>Time Limit:</strong> {{.Problem.TimeLimit}} seconds</p>
     <p><strong>Memory Limit:</strong> {{.Problem.MemoryLimit}} MB</p>

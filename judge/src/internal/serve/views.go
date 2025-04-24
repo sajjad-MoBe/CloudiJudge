@@ -206,13 +206,13 @@ func addProblemView(c *fiber.Ctx) error {
 func handleAddProblemView(c *fiber.Ctx) error {
 	var errorMsg string = ""
 
-	if c.FormValue("title") == "" {
-		errorMsg = "عنوان وارد شده نامعتبر است."
+	if len(c.FormValue("title")) < 5 || len(c.FormValue("title")) > 50 {
+		errorMsg = "طول عنوان وارد شده باید بین 5 الی 50 کاراکتر باشد."
 
-	} else if c.FormValue("statement") == "" {
-		errorMsg = "توضیحات وارد شده نامعتبر است."
+	} else if len(c.FormValue("statement")) < 100 || len(c.FormValue("statement")) > 5000 {
+		errorMsg = "طول توضیحات وارد شده باید بین 100 الی 5000 کاراکتر باشد."
 
-	} else if parseFloat32(c.FormValue("time_limit")) <= 0 {
+	} else if parseInt(c.FormValue("time_limit")) <= 0 {
 		errorMsg = "محدودیت زمانی باید یک عدد مثبت باشد."
 
 	} else if parseFloat32(c.FormValue("memory_limit")) <= 0 {
@@ -298,6 +298,88 @@ func editProblemView(c *fiber.Ctx) error {
 	})
 }
 
+func handleEditProblemView(c *fiber.Ctx) error {
+
+	id, err := strconv.Atoi(c.Params("id"))
+	if err != nil {
+		return error_404(c)
+	}
+
+	var problem Problem
+	if err := db.Preload("Owner").First(&problem, id).Error; err != nil {
+		return error_404(c)
+	}
+
+	userID := c.Locals("user_id").(uint)
+	if problem.OwnerID != userID {
+		var user User
+		result := db.First(&user, userID)
+		if result.Error != nil {
+			return c.Status(fiber.StatusInternalServerError).SendString("خطا در دریافت اطلاعات کاربر")
+		}
+		if !user.IsAdmin {
+			return error_403(c)
+		}
+	}
+
+	var errorMsg string = ""
+
+	if len(c.FormValue("title")) < 5 || len(c.FormValue("title")) > 50 {
+		errorMsg = "طول عنوان وارد شده باید بین 5 الی 50 کاراکتر باشد."
+
+	} else if len(c.FormValue("statement")) < 100 || len(c.FormValue("statement")) > 5000 {
+		errorMsg = "طول توضیحات وارد شده باید بین 100 الی 5000 کاراکتر باشد."
+
+	} else if parseInt(c.FormValue("time_limit")) <= 0 {
+		errorMsg = "محدودیت زمانی باید یک عدد مثبت باشد."
+
+	} else if parseFloat32(c.FormValue("memory_limit")) <= 0 {
+		errorMsg = "محدودیت حافظه باید یک عدد مثبت باشد."
+
+	} else {
+
+		// Save the problem to the database
+		if err := db.Save(&problem).Error; err != nil {
+			errorMsg = "خطایی در ذخیره سوال رخ داد."
+		} else {
+			problemDir := filepath.Join(os.Getenv("PROBLEM_UPLOAD_FOLDER"), fmt.Sprintf("%d", problem.ID))
+			inputFile, inputErr := c.FormFile("input_file")
+			outputFile, outputErr := c.FormFile("output_file")
+
+			if inputErr == nil {
+				if err := c.SaveFile(inputFile, filepath.Join(problemDir, "input.txt")); err != nil {
+					errorMsg = "خطایی در ذخیره فایل ورودی ها رخ داد."
+				}
+			}
+			if errorMsg == "" && outputErr == nil {
+				if err := c.SaveFile(outputFile, filepath.Join(problemDir, "output.txt")); err != nil {
+					errorMsg = "خطایی در ذخیره فایل خروجی ها رخ داد."
+				}
+			}
+			if errorMsg == "" {
+				problem.Title = c.FormValue("title")
+				problem.Statement = c.FormValue("statement")
+				problem.TimeLimit = parseInt(c.FormValue("time_limit"))
+				problem.MemoryLimit = parseFloat32(c.FormValue("memory_limit"))
+				problem.IsPublished = false
+				db.Save(&problem)
+				return c.Redirect(fmt.Sprintf("/problemset/%d", problem.ID))
+			}
+
+		}
+	}
+	return render(c, "add_problem", fiber.Map{
+		"PageTitle":   "CloudiJudge | ساخت سوال",
+		"Error":       errorMsg,
+		"Title":       problem.Title,
+		"Statement":   problem.Statement,
+		"TimeLimit":   problem.TimeLimit,
+		"MemoryLimit": problem.MemoryLimit,
+		"ProblemID":   problem.ID,
+		"Edit":        true,
+	})
+}
+
 func showProblemView(c *fiber.Ctx) error {
 	id, err := strconv.Atoi(c.Params("id"))
 	if err != nil {
@@ -351,7 +433,6 @@ func downloadProblemInOutFiles(c *fiber.Ctx) error {
 	}
 
 	filePath := filepath.Join(os.Getenv("PROBLEM_UPLOAD_FOLDER"), fmt.Sprintf("%d/%s", problem.ID, filename))
-	fmt.Println(filePath)
 	if _, err := os.Stat(filePath); os.IsNotExist(err) {
 		return error_404(c)
 	}
