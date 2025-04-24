@@ -1,0 +1,25 @@
+<body>
+    <h1>{{.ProfileUser.ID}} - {{.ProfileUser.Email}}(
+            {{ if .ProfileUser.IsAdmin }}
+                Admin
+            {{ else }}
+                User
+            {{ end }}
+        )
+
+    </h1>
+    {{ if .User.IsAdmin }}
+        {{ if .ProfileUser.IsAdmin }}
+            {{ if eq .ProfileUser.AdminCreatedByID .User.ID }}
+                <form action="/user/{{ .ProfileUser.ID }}/demote" method="POST">
+                    <button type="submit">Demote to User</button>
+                </form>
+            {{ end }}
+        {{ else }}
+            <form action="/user/{{ .ProfileUser.ID }}/promote" method="POST">
+                <button type="submit">Promote to Admin</button>
+            </form>
+        {{ end }}
+    {{ end }}
+    <a href="/problemset">all Problems</a>
+</body>

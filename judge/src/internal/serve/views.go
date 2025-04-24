@@ -114,16 +114,17 @@ func handleSignupView(c *fiber.Ctx) error {
 	}
 	password = string(hashedPassword)
 
-	var user User
-	result := db.Where("email = ?", email).First(&user)
+	var user *User
+	result := db.Where("email = ?", email).First(user)
 	if result.Error == nil {
 		setSigninError(c, email, "ایمیل وارد شده قبلا ثبت نام کرده است. لطفا وارد شوید.")
 		return c.Redirect("/signin")
 	}
-	db.Create(&User{
+	user = &User{
 		Email:    email,
 		Password: password,
-	})
+	}
+	db.Create(user)
 	db.Commit()
 	sess, err := store.Get(c)
 	if err != nil {
@@ -155,7 +156,7 @@ func landingView(c *fiber.Ctx) error {
 func problemsetView(c *fiber.Ctx) error {
 
 	// Retrieve user ID from the session
-	userID := c.Locals("user_id")
+	userID := c.Locals("user_id").(uint)
 
 	// Fetch user details from the database
 	var user User
@@ -339,4 +340,90 @@ func handlePublishProblemView(c *fiber.Ctx) error {
 	db.Save(&problem)
 
 	return c.Redirect(fmt.Sprintf("/problemset/%d", problem.ID))
+}
+
+func showProfileView(c *fiber.Ctx) error {
+	id, err := strconv.Atoi(c.Params("id"))
+	if err != nil {
+		return error_404(c)
+	}
+
+	userID := uint(id)
+	var profileUser User
+	result := db.First(&profileUser, userID)
+	if result.Error != nil {
+		return error_404(c)
+	}
+
+	userID = c.Locals("user_id").(uint)
+	var user User
+	result = db.First(&user, userID)
+	if result.Error != nil {
+		return error_404(c)
+	}
+
+	return render(c, "show_profile", fiber.Map{
+		"PageTitle":   "CloudiJudge | پروفایل کاربر",
+		"ProfileUser": profileUser,
+		"User":        user,
+	})
+}
+
+func promoteUserView(c *fiber.Ctx) error {
+	id, err := strconv.Atoi(c.Params("id"))
+	if err != nil {
+		return error_404(c)
+	}
+
+	userID := uint(id)
+	var targetUser User
+	result := db.First(&targetUser, userID)
+	if result.Error != nil {
+		return error_404(c)
+	}
+
+	userID = c.Locals("user_id").(uint)
+	var adminUser User
+	result = db.First(&adminUser, userID)
+	if result.Error == nil {
+		if !adminUser.IsAdmin {
+			return error_403(c)
+		}
+		if !targetUser.IsAdmin {
+			targetUser.IsAdmin = true
+			targetUser.AdminCreatedByID = adminUser.ID
+			db.Save(&targetUser)
+		}
+	}
+
+	return c.Redirect(fmt.Sprintf("/user/%d", targetUser.ID))
+}
+
+func demoteUserView(c *fiber.Ctx) error {
+	id, err := strconv.Atoi(c.Params("id"))
+	if err != nil {
+		return error_404(c)
+	}
+
+	userID := uint(id)
+	var targetUser User
+	result := db.First(&targetUser, userID)
+	if result.Error != nil {
+		return error_404(c)
+	}
+
+	userID = c.Locals("user_id").(uint)
+	var adminUser User
+	result = db.First(&adminUser, userID)
+	if result.Error == nil {
+		if !adminUser.IsAdmin {
+			return error_403(c)
+		}
+		if targetUser.IsAdmin && targetUser.AdminCreatedByID == adminUser.ID {
+			targetUser.IsAdmin = false
+			db.Save(&targetUser)
+		}
+	}
+
+	return c.Redirect(fmt.Sprintf("/user/%d", targetUser.ID))
 }
