@@ -17,7 +17,7 @@ type User struct {
 
 type Problem struct {
 	gorm.Model
-	Title       string     `gorm:"type:varchar(255)" json:"title"`
+	Title       string     `gorm:"type:varchar(50)" json:"title"`
 	Statement   string     `gorm:"type:text" json:"statement"`
 	IsPublished bool       `gorm:"default:false" json:"is_published"`
 	PublishedAt *time.Time `gorm:"default:null" json:"published_at"`
@@ -25,4 +25,14 @@ type Problem struct {
 	MemoryLimit float32    `gorm:"default:0" json:"memory_limit"` // in mb
 	OwnerID     uint       `json:"user_id"`
 	Owner       User       `gorm:"foreignKey:OwnerID"`
+}
+
+type Submission struct {
+	gorm.Model
+	Status    string `gorm:"default:waiting" json:"status"`
+	Token     string `gorm:"type:text" json:"token"`
+	OwnerID   uint   `json:"user_id"`
+	Owner     User   `gorm:"foreignKey:OwnerID"`
+	ProblemID uint   `json:"problem_id"`
+	Problem   User   `gorm:"foreignKey:ProblemID"`
 }
