@@ -189,7 +189,7 @@ func handleAddProblemView(c *fiber.Ctx) error {
 			Statement:   c.FormValue("statement"),
 			TimeLimit:   parseInt(c.FormValue("time_limit")),
 			MemoryLimit: parseFloat32(c.FormValue("memory_limit")),
-			UserID:      c.Locals("user_id").(uint),
+			OwnerID:     c.Locals("user_id").(uint),
 		}
 
 		// Save the problem to the database
@@ -249,7 +249,7 @@ func showProblemView(c *fiber.Ctx) error {
 	}
 	return render(c, "show_problem", fiber.Map{
 		"PageTitle":   "CloudiJudge | مشاهده سوال",
-		"OwnerId":     problem.UserID,
+		"OwnerId":     problem.OwnerID,
 		"Title":       problem.Title,
 		"Status":      status,
 		"Statement":   problem.Statement,

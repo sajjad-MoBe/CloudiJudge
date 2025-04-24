@@ -21,5 +21,5 @@ type Problem struct {
 	PublishedAt *time.Time `json:"published_at"`
 	TimeLimit   int        `gorm:"default:0" json:"time_limit"`   // in milliseconds
 	MemoryLimit float32    `gorm:"default:0" json:"memory_limit"` // in mb
-	UserID      uint       `json:"user_id"`
+	OwnerID     uint       `json:"user_id"`
 }
