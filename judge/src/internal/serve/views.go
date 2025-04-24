@@ -371,10 +371,10 @@ func handleEditProblemView(c *fiber.Ctx) error {
 	return render(c, "add_problem", fiber.Map{
 		"PageTitle":   "CloudiJudge | ساخت سوال",
 		"Error":       errorMsg,
-		"Title":       problem.Title,
-		"Statement":   problem.Statement,
-		"TimeLimit":   problem.TimeLimit,
-		"MemoryLimit": problem.MemoryLimit,
+		"Title":       c.FormValue("title"),
+		"Statement":   c.FormValue("statement"),
+		"TimeLimit":   c.FormValue("time_limit"),
+		"MemoryLimit": c.FormValue("memory_limit"),
 		"ProblemID":   problem.ID,
 		"Edit":        true,
 	})
