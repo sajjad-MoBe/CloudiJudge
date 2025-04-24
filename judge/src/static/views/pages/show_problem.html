@@ -1,9 +1,23 @@
 <body>
-    <h1>{{.Title}} ({{.Status}})</h1>
-    <p><strong>Statement:</strong> {{.Statement}}</p>
-    <p><strong>Time Limit:</strong> {{.TimeLimit}} seconds</p>
-    <p><strong>Memory Limit:</strong> {{.MemoryLimit}} MB</p>
-    <p><strong>Input File:</strong> <a href="{{.InputFile}}">{{.InputFile}}</a></p>
-    <p><strong>Output File:</strong> <a href="{{.OutputFile}}">{{.OutputFile}}</a></p>
+    <h1>{{.Problem.Title}} (
+            {{ if .IsPublished }}
+                Published
+            {{ else }}
+                Draft
+            {{ end }}
+        ) 
+        {{ if .User.IsAdmin }}
+            {{ if .Problem.IsPublished }}
+                <a href="unpublish">Unpublish</a>
+            {{ else }}
+                <a href="publish">Publish</a>
+            {{ end }}
+        {{ end }}
+    </h1>
+    <p><strong>Statement:</strong> {{.Problem.Statement}}</p>
+    <!-- <p><strong>Time Limit:</strong> {{.Problem.TimeLimit}} seconds</p>
+    <p><strong>Memory Limit:</strong> {{.Problem.MemoryLimit}} MB</p> -->
+    <p><strong>Input File:</strong> <a href="/problemset/{{.Problem.ID}}/dl/input.txt" target="_blank">click to download</a></p>
+    <p><strong>Output File:</strong> <a href="/problemset/{{.Problem.ID}}/dl/output.txt" target="_blank">click to download</a></p>
     <a href="/problemset">all Problems</a>
 </body>

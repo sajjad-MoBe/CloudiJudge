@@ -238,24 +238,56 @@ func showProblemView(c *fiber.Ctx) error {
 	}
 
 	var problem Problem
-	if err := db.First(&problem, id).Error; err != nil {
+	if err := db.Preload("Owner").First(&problem, id).Error; err != nil {
 		return render(c, "error_404", fiber.Map{})
 	}
-	var status string
-	if problem.IsPublished {
-		status = "Published"
-	} else {
-		status = "Draft"
+
+	userID := c.Locals("user_id")
+	var user User
+	result := db.First(&user, userID)
+	if result.Error != nil {
+		return c.Status(fiber.StatusInternalServerError).SendString("خطا در دریافت اطلاعات کاربر")
 	}
+
+	// db.Save(&user)
 	return render(c, "show_problem", fiber.Map{
-		"PageTitle":   "CloudiJudge | مشاهده سوال",
-		"OwnerId":     problem.OwnerID,
-		"Title":       problem.Title,
-		"Status":      status,
-		"Statement":   problem.Statement,
-		"TimeLimit":   problem.TimeLimit,
-		"MemoryLimit": problem.MemoryLimit,
-		"InputFile":   "problem.InputFile",
-		"OutputFile":  "problem.OutputFile",
+		"PageTitle": "CloudiJudge | مشاهده سوال",
+		"Problem":   problem,
+		"User":      user,
 	})
+}
+
+func downloadProblemInOutFiles(c *fiber.Ctx) error {
+
+	filename := c.Params("filename")
+	if filename != "input.txt" && filename != "output.txt" {
+		return render(c, "error_404", fiber.Map{})
+	}
+	id, err := strconv.Atoi(c.Params("id"))
+	if err != nil {
+		return render(c, "error_404", fiber.Map{})
+	}
+
+	var problem Problem
+	if err := db.Preload("Owner").First(&problem, id).Error; err != nil {
+		return render(c, "error_404", fiber.Map{})
+	}
+
+	userID := c.Locals("user_id")
+	var user User
+	result := db.First(&user, userID)
+	if result.Error != nil {
+		return c.Status(fiber.StatusInternalServerError).SendString("خطا در دریافت اطلاعات کاربر")
+	}
+	if !problem.IsPublished && problem.OwnerID != user.ID && !user.IsAdmin {
+		return render(c, "error_404", fiber.Map{})
+	}
+
+	filePath := filepath.Join(os.Getenv("PROBLEM_UPLOAD_FOLDER"), fmt.Sprintf("%d/%s", problem.ID, filename))
+	fmt.Println(filePath)
+	if _, err := os.Stat(filePath); os.IsNotExist(err) {
+		return render(c, "error_404", fiber.Map{})
+	}
+
+	return c.Download(filePath, filename)
 }

@@ -31,6 +31,7 @@ func StartListening(port int) {
 	app.Post("/problemset/add", isAuthenticated, handleAddProblemView)
 
 	app.Get("/problemset/:id", isAuthenticated, showProblemView)
+	app.Get("/problemset/:id/dl/:filename", isAuthenticated, downloadProblemInOutFiles)
 
 	log.Fatal(app.Listen(fmt.Sprintf(":%d", port)))
 
