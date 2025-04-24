@@ -5,6 +5,7 @@ import (
 	"os"
 	"path/filepath"
 	"strconv"
+	"time"
 
 	"github.com/gofiber/fiber/v2"
 	"golang.org/x/crypto/bcrypt"
@@ -13,6 +14,14 @@ import (
 // Template handling function
 func render(c *fiber.Ctx, name string, data interface{}) error {
 	return c.Render("pages/"+name, data, "layouts/main")
+}
+
+func error_404(c *fiber.Ctx) error {
+	return c.Status(404).Render("pages/error_404", fiber.Map{}, "layouts/main")
+}
+
+func error_403(c *fiber.Ctx) error {
+	return c.Status(403).Render("pages/error_403", fiber.Map{}, "layouts/main")
 }
 
 func setSigninError(c *fiber.Ctx, email, errMsg string) {
@@ -234,12 +243,12 @@ func handleAddProblemView(c *fiber.Ctx) error {
 func showProblemView(c *fiber.Ctx) error {
 	id, err := strconv.Atoi(c.Params("id"))
 	if err != nil {
-		return render(c, "error_404", fiber.Map{})
+		return error_404(c)
 	}
 
 	var problem Problem
 	if err := db.Preload("Owner").First(&problem, id).Error; err != nil {
-		return render(c, "error_404", fiber.Map{})
+		return error_404(c)
 	}
 
 	userID := c.Locals("user_id")
@@ -261,16 +270,16 @@ func downloadProblemInOutFiles(c *fiber.Ctx) error {
 
 	filename := c.Params("filename")
 	if filename != "input.txt" && filename != "output.txt" {
-		return render(c, "error_404", fiber.Map{})
+		return error_404(c)
 	}
 	id, err := strconv.Atoi(c.Params("id"))
 	if err != nil {
-		return render(c, "error_404", fiber.Map{})
+		return error_404(c)
 	}
 
 	var problem Problem
 	if err := db.Preload("Owner").First(&problem, id).Error; err != nil {
-		return render(c, "error_404", fiber.Map{})
+		return error_404(c)
 	}
 
 	userID := c.Locals("user_id")
@@ -280,14 +289,54 @@ func downloadProblemInOutFiles(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusInternalServerError).SendString("خطا در دریافت اطلاعات کاربر")
 	}
 	if !problem.IsPublished && problem.OwnerID != user.ID && !user.IsAdmin {
-		return render(c, "error_404", fiber.Map{})
+		return error_404(c)
 	}
 
 	filePath := filepath.Join(os.Getenv("PROBLEM_UPLOAD_FOLDER"), fmt.Sprintf("%d/%s", problem.ID, filename))
 	fmt.Println(filePath)
 	if _, err := os.Stat(filePath); os.IsNotExist(err) {
-		return render(c, "error_404", fiber.Map{})
+		return error_404(c)
 	}
 
 	return c.Download(filePath, filename)
+}
+
+func handlePublishProblemView(c *fiber.Ctx) error {
+
+	command := c.Params("command")
+	if command != "publish" && command != "unpublish" {
+		return error_404(c)
+	}
+
+	id, err := strconv.Atoi(c.Params("id"))
+	if err != nil {
+		return error_404(c)
+	}
+
+	var problem Problem
+	if err := db.First(&problem, id).Error; err != nil {
+		return error_404(c)
+	}
+
+	userID := c.Locals("user_id")
+	var user User
+	result := db.First(&user, userID)
+	if result.Error != nil {
+		return c.Status(fiber.StatusInternalServerError).SendString("خطا در دریافت اطلاعات کاربر")
+	}
+	if !user.IsAdmin {
+		return error_403(c) // change to no permission
+	}
+
+	if command == "publish" {
+		if !problem.IsPublished {
+			problem.IsPublished = true
+			problem.PublishedAt = time.Now()
+		}
+	} else {
+		problem.IsPublished = false
+	}
+	db.Save(&problem)
+
+	return c.Redirect(fmt.Sprintf("/problemset/%d", problem.ID))
 }

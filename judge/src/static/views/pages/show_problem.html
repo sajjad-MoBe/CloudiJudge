@@ -1,6 +1,6 @@
 <body>
     <h1>{{.Problem.Title}} (
-            {{ if .IsPublished }}
+            {{ if .Problem.IsPublished }}
                 Published
             {{ else }}
                 Draft
@@ -8,15 +8,15 @@
         ) 
         {{ if .User.IsAdmin }}
             {{ if .Problem.IsPublished }}
-                <a href="unpublish">Unpublish</a>
+                <a href="/problemset/{{.Problem.ID}}/unpublish">Unpublish</a>
             {{ else }}
-                <a href="publish">Publish</a>
+                <a href="/problemset/{{.Problem.ID}}/publish">Publish</a>
             {{ end }}
         {{ end }}
     </h1>
     <p><strong>Statement:</strong> {{.Problem.Statement}}</p>
-    <!-- <p><strong>Time Limit:</strong> {{.Problem.TimeLimit}} seconds</p>
-    <p><strong>Memory Limit:</strong> {{.Problem.MemoryLimit}} MB</p> -->
+    <p><strong>Time Limit:</strong> {{.Problem.TimeLimit}} seconds</p>
+    <p><strong>Memory Limit:</strong> {{.Problem.MemoryLimit}} MB</p>
     <p><strong>Input File:</strong> <a href="/problemset/{{.Problem.ID}}/dl/input.txt" target="_blank">click to download</a></p>
     <p><strong>Output File:</strong> <a href="/problemset/{{.Problem.ID}}/dl/output.txt" target="_blank">click to download</a></p>
     <a href="/problemset">all Problems</a>
