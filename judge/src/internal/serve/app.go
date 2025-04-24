@@ -12,8 +12,12 @@ func StartListening(port int) {
 	connectDatabase()
 	initSessionStore()
 
+	htmlEngine := html.New("static/views/", ".html")
+	htmlEngine.AddFunc("add", Add)
+	htmlEngine.AddFunc("sub", Sub)
+
 	app := fiber.New(fiber.Config{
-		Views: html.New("static/views/", ".html"),
+		Views: htmlEngine,
 	})
 
 	// Landing
