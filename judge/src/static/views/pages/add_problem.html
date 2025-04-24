@@ -1,5 +1,9 @@
 <body>
-    <h1>sakht Problem jadid</h1>
+    {{ if .Edit }}
+        <h1>edit Problem</h1>
+    {{ else }}
+        <h1>sakht Problem jadid</h1>
+    {{ end }}
 
     {{if .Error}}
         <div style="color: red;">{{.Error}}</div>
@@ -18,12 +22,24 @@
         <label for="memory_limit">Memory Limit (MB):</label><br>
         <input type="number" id="memory_limit" name="memory_limit" value="{{.MemoryLimit}}" step="0" min="0"><br><br>
         
-        <label for="input_file">Input File:</label><br>
-        <input type="file" id="input_file" name="input_file"><br><br>
-        
-        <label for="output_file">Output File:</label><br>
-        <input type="file" id="output_file" name="output_file"><br><br>
-        
-        <button type="submit">Create Problem</button>
+        {{ if .Edit }}
+            <label for="input_file">Input File:</label><br>
+            <input type="file" id="input_file" name="input_file">
+                <a href="/problemset/{{.ProblemID}}/dl/input.txt" target="_blank">click to download</a>
+            <br><br>
+            
+            <label for="output_file">Output File:</label><br>
+            <input type="file" id="output_file" name="output_file">
+                <a href="/problemset/{{.ProblemID}}/dl/output.txt" target="_blank">click to download</a>
+            <br><br>
+            <button type="submit">Edit Problem</button>
+        {{ else }}
+            <label for="input_file">Input File:</label><br>
+            <input type="file" id="input_file" name="input_file"><br><br>
+            
+            <label for="output_file">Output File:</label><br>
+            <input type="file" id="output_file" name="output_file"><br><br>
+            <button type="submit">Create Problem</button>
+        {{ end }}
     </form>
 </body>
