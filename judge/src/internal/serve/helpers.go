@@ -5,6 +5,7 @@ import (
 	"encoding/base64"
 	"fmt"
 	"strconv"
+	"time"
 	"unicode"
 )
 
@@ -60,10 +61,42 @@ func Add(a, b int) int {
 func Sub(a, b int) int {
 	return a - b
 }
+func Div(v1, v2 int) int {
+	if v2 == 0 {
+		return 0
+	}
+	return v1 / v2
+}
 
 func Truncate(s string, maxLength int) string {
 	if len(s) > maxLength {
 		return s[:maxLength] + "..."
 	}
 	return s
+}
+
+func TimeAgo(t time.Time) string {
+	duration := time.Since(t)
+
+	if duration < time.Hour {
+		minutes := int(duration.Minutes())
+		if minutes == 1 {
+			return "1 minute ago"
+		}
+		return fmt.Sprintf("%d minutes ago", minutes)
+
+	} else if duration < 48*time.Hour {
+		hours := int(duration.Hours())
+		if hours == 1 {
+			return "1 hour ago"
+		}
+		return fmt.Sprintf("%d hours ago", hours)
+
+	} else {
+		days := int(duration.Hours() / 24)
+		if days == 1 {
+			return "1 day ago"
+		}
+		return fmt.Sprintf("%d days ago", days)
+	}
 }

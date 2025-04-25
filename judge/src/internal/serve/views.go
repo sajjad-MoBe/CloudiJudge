@@ -155,11 +155,23 @@ func showProfileView(c *fiber.Ctx) error {
 	if result.Error != nil {
 		return error_404(c)
 	}
+	var submissions []Submission
+
+	err = db.Model(&Submission{}).
+		Where("owner_id = ?", user.ID).
+		Limit(3).
+		Order("created_at DESC").
+		Preload("Problem").
+		Find(&submissions).Error
+	if err != nil {
+		clear(submissions)
+	}
 
 	return render(c, "show_profile", fiber.Map{
 		"PageTitle":   "CloudiJudge | پروفایل کاربر",
 		"ProfileUser": profileUser,
 		"User":        user,
+		"Submissions": submissions,
 	})
 }
 

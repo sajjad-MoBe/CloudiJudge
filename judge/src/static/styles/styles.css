@@ -31,8 +31,8 @@ body {
     padding: 2.5rem;
     border-radius: 15px;
     box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
-    width: 100%;
-    max-width: 400px;
+    width: 70%;
+    /* max-width: 400px; */
     margin: 1rem;
     backdrop-filter: blur(10px);
 }
@@ -183,11 +183,13 @@ select:valid + .error-message::after {
 
 /* Profile Page Styles */
 .admin-indicator {
+    display: block;
+    align-items: center;
+    text-align: center;
     background-color: var(--primary-color);
     color: white;
     padding: 0.5rem 1rem;
     border-radius: 20px;
-    display: inline-flex;
     align-items: center;
     gap: 0.5rem;
     margin-bottom: 1rem;
@@ -211,7 +213,7 @@ select:valid + .error-message::after {
 
 .role-control {
     margin-top: 0.5rem;
-    display: flex;
+    display: block;
     gap: 0.5rem;
     justify-content: center;
 }
@@ -329,7 +331,9 @@ select:valid + .error-message::after {
 .submission-item.error {
     border-left: 4px solid var(--error-color);
 }
-
+.submission-item.waiting {
+    border-left: 4px solid #87CEEB;
+}
 .submission-status {
     display: flex;
     align-items: center;
@@ -339,9 +343,19 @@ select:valid + .error-message::after {
 .submission-status.success {
     color: var(--success-color);
 }
+.submission-status.waiting {
+    color: #24ade4;
+}
 
 .submission-status.error {
     color: var(--error-color);
+}
+
+
+.submission-time {
+    background-color: beige;
+    border-radius: 5px;
+    font-size: 13px;
 }
 
 .view-all-link {
@@ -665,3 +679,14 @@ select:valid + .error-message::after {
         padding: 1rem;
     }
 } 
+
+
+.role-box {
+    display: inline-block;
+    padding: 2px 6px;
+    border: 1px solid #46bbd5;
+    border-radius: 4px;
+    background-color: #55bdd7;
+    font-size: 13px;
+    color: #eb0909;
+}

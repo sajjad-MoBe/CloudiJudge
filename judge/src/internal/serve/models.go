@@ -13,6 +13,8 @@ type User struct {
 	Problems         []Problem `gorm:"foreignKey:OwnerID" json:"problems"`
 	IsAdmin          bool      `gorm:"default:false" json:"isAdmin"`
 	AdminCreatedByID uint
+	SolveAttemps     int `gorm:"default:0" json:"solve_attemps"`
+	SuccessAttemps   int `gorm:"default:0" json:"success_attemps"`
 }
 
 type Problem struct {
