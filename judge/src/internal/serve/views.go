@@ -24,71 +24,48 @@ func error_403(c *fiber.Ctx) error {
 	return c.Status(403).Render("pages/error_403", fiber.Map{}, "layouts/main")
 }
 
-func setSigninError(c *fiber.Ctx, email, errMsg string) {
-	sess, err := store.Get(c)
-	if err == nil {
-		sess.Set("siginError", errMsg)
-		sess.Set("email", email)
-		sess.Save()
-	}
-}
-
-func signinView(c *fiber.Ctx) error {
+func loginView(c *fiber.Ctx) error {
 	var email string
 	var message string
 
-	sess, err := store.Get(c)
-	if err == nil {
-		tmp := sess.Get("siginError")
-		if tmp != nil {
-			message = tmp.(string)
-			sess.Delete("siginError")
-			sess.Save()
-		}
-		tmp = sess.Get("email")
-		if tmp != nil {
-			email = tmp.(string)
-			sess.Delete("email")
-			sess.Save()
-		}
-	}
-
-	return render(c, "signin", fiber.Map{
+	return render(c, "login", fiber.Map{
 		"PageTitle": "CloudiJudge | ورود کاربر",
 		"Message":   message,
 		"Email":     email,
 	})
 }
 
-func handleSigninView(c *fiber.Ctx) error {
+func handleLoginView(c *fiber.Ctx) error {
 
-	// Parse form data
 	email := c.FormValue("email")
 	password := c.FormValue("password")
 
-	// Validate user credentials
+	var errorMsg string
 	var user User
 	result := db.Where("email = ?", email).First(&user)
 	if result.Error != nil {
-		setSigninError(c, email, "ایمیل یا رمز عبور وارد شده معتبر نمیباشد.")
-		return c.Redirect("/signin")
-	}
-	err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password))
-	if err != nil {
-		setSigninError(c, email, "ایمیل یا رمز عبور وارد شده معتبر نمیباشد.")
-	}
+		errorMsg = "Email or password is invalid!"
 
-	sess, err := store.Get(c)
-	if err != nil {
-		setSigninError(c, email, "خطای ناشناخته ای رخ داد")
-		c.Redirect("/signin")
-	}
-	sess.Set("user_id", user.ID)
-	sess.Save()
+	} else if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password)); err != nil {
+		errorMsg = "Email or password is invalid!"
 
-	// Redirect to the problemset
-	return c.Redirect("/problemset")
+	} else if sess, err := store.Get(c); err != nil {
+		errorMsg = "An unknown error has occurred!"
+
+	} else {
+		sess.Set("user_id", user.ID)
+		sess.Save()
+
+		return c.Redirect("/problemset")
+	}
+	return render(c, "login", fiber.Map{
+		"PageTitle": "CloudiJudge | login",
+		"Message":   errorMsg,
+		"Email":     email,
+	})
+
 }
+func setLoginError(c *fiber.Ctx, email, err string) {}
 
 func handleSignupView(c *fiber.Ctx) error {
 
@@ -96,29 +73,28 @@ func handleSignupView(c *fiber.Ctx) error {
 	email := c.FormValue("email")
 	password := c.FormValue("password")
 	confirm_password := c.FormValue("confirm_password")
-
 	if password != confirm_password {
-		setSigninError(c, email, "رمز عبور و تایید آن یکسان نیستند.")
-		c.Redirect("/signin")
+		setLoginError(c, email, "رمز عبور و تایید آن یکسان نیستند.")
+		c.Redirect("/login")
 	}
 
 	if !isSecurePassword(password) {
-		setSigninError(c, email, "رمز عبور انتخابی باید حداقل به طول ۶ و شامل حروف و اعداد باشد.")
-		c.Redirect("/signin")
+		setLoginError(c, email, "رمز عبور انتخابی باید حداقل به طول ۶ و شامل حروف و اعداد باشد.")
+		c.Redirect("/login")
 	}
 
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 	if err != nil {
-		setSigninError(c, email, "رمز عبور دیگری انتخاب کنید.")
-		c.Redirect("/signin")
+		setLoginError(c, email, "رمز عبور دیگری انتخاب کنید.")
+		c.Redirect("/login")
 	}
 	password = string(hashedPassword)
 
 	var user *User
 	result := db.Where("email = ?", email).First(user)
 	if result.Error == nil {
-		setSigninError(c, email, "ایمیل وارد شده قبلا ثبت نام کرده است. لطفا وارد شوید.")
-		return c.Redirect("/signin")
+		setLoginError(c, email, "ایمیل وارد شده قبلا ثبت نام کرده است. لطفا وارد شوید.")
+		return c.Redirect("/login")
 	}
 	user = &User{
 		Email:    email,
@@ -128,8 +104,8 @@ func handleSignupView(c *fiber.Ctx) error {
 	db.Commit()
 	sess, err := store.Get(c)
 	if err != nil {
-		setSigninError(c, email, "خطای ناشناخته ای رخ داد")
-		c.Redirect("/signin")
+		setLoginError(c, email, "خطای ناشناخته ای رخ داد")
+		c.Redirect("/login")
 	}
 	sess.Set("user_id", user.ID)
 	sess.Save()
@@ -144,7 +120,7 @@ func signoutView(c *fiber.Ctx) error {
 		sess.Destroy()
 	}
 
-	return c.Redirect("/signin")
+	return c.Redirect("/login")
 }
 
 func landingView(c *fiber.Ctx) error {

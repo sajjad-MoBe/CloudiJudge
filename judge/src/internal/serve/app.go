@@ -20,13 +20,14 @@ func StartListening(port int) {
 	app := fiber.New(fiber.Config{
 		Views: htmlEngine,
 	})
+	app.Static("/static", "static/styles")
 
 	// Landing
 	app.Get("/", landingView)
 
-	// signin
-	app.Get("/signin", signinView)
-	app.Post("/signin", handleSigninView)
+	// login
+	app.Get("/login", loginView)
+	app.Post("/login", handleLoginView)
 	app.Post("/signup", handleSignupView)
 	app.Get("/signout", signoutView)
 
