@@ -1,10 +1,21 @@
 package serve
 
 import (
+	"crypto/rand"
+	"encoding/base64"
 	"fmt"
 	"strconv"
 	"unicode"
 )
+
+func GenerateRandomToken(length int) string {
+	bytes := make([]byte, length)
+	_, err := rand.Read(bytes)
+	if err != nil {
+		return "sfjskfjejowiri3938*@(#&E489643)"
+	}
+	return base64.RawURLEncoding.EncodeToString(bytes)
+}
 
 func isSecurePassword(password string) bool {
 	if len(password) <= 6 {

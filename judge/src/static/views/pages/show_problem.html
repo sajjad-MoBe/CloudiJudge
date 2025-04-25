@@ -1,4 +1,7 @@
 <body>
+    {{if .Error}}
+        <div style="color: red;">{{.Error}}</div>
+    {{end}}
     <h2>{{.Problem.Title}} by <a href="/user/{{.Problem.OwnerID}}"> {{.Problem.Owner.Email}} </a>
         (
             {{ if .Problem.IsPublished }}
@@ -26,5 +29,10 @@
         <p><strong>Input File:</strong> <a href="/problemset/{{.Problem.ID}}/dl/input.txt" target="_blank">click to download</a></p>
         <p><strong>Output File:</strong> <a href="/problemset/{{.Problem.ID}}/dl/output.txt" target="_blank">click to download</a></p>
     {{end}}
+
+    <form action="/problemset/{{.Problem.ID}}" method="POST" enctype="multipart/form-data">
+        <input type="file" name="submit_file" accept=".go" required />
+        <button type="submit">Upload</button>
+    </form>
     <a href="/problemset">all Problems</a>
 </body>

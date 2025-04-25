@@ -34,6 +34,8 @@ func StartListening(port int) {
 	app.Post("/user/:id/promote", isAuthenticated, promoteUserView)
 	app.Post("/user/:id/demote", isAuthenticated, demoteUserView)
 
+	app.Get("/user/:id/submissions", isAuthenticated, submissionsView)
+
 	// problemset
 	app.Get("/problemset", isAuthenticated, problemsetView)
 	app.Get("/problemset/add", isAuthenticated, addProblemView)
@@ -44,7 +46,9 @@ func StartListening(port int) {
 	app.Get("/problemset/:id/edit", isAuthenticated, editProblemView)
 	app.Post("/problemset/:id/edit", isAuthenticated, handleEditProblemView)
 
-	app.Get("/problemset/:id/:command", isAuthenticated, handlePublishProblemView)
+	app.Post("/problemset/:id", isAuthenticated, handleSubmitProblemView)
+
+	app.Get("/problemset/:id/:command", isAuthenticated, handlePublishProblemView) // command is publish and unpublish
 
 	log.Fatal(app.Listen(fmt.Sprintf(":%d", port)))
 
