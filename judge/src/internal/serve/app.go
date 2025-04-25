@@ -33,7 +33,7 @@ func StartListening(port int) {
 	app.Post("/login", handleLoginView)
 	app.Get("/signup", signupView)
 	app.Post("/signup", handleSignupView)
-	app.Get("/signout", signoutView)
+	app.Get("/logout", logoutView)
 
 	app.Get("/user/:id", isAuthenticated, showProfileView)
 	app.Post("/user/:id/promote", isAuthenticated, promoteUserView)

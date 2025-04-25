@@ -121,7 +121,7 @@ func handleSignupView(c *fiber.Ctx) error {
 	})
 }
 
-func signoutView(c *fiber.Ctx) error {
+func logoutView(c *fiber.Ctx) error {
 	sess, err := store.Get(c)
 	if err == nil {
 		sess.Destroy()
