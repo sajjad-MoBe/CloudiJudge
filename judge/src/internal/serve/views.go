@@ -132,7 +132,7 @@ func signoutView(c *fiber.Ctx) error {
 
 func landingView(c *fiber.Ctx) error {
 	return render(c, "landing", fiber.Map{
-		"PageTitle": "CloudiJudge | صفحه اصلی",
+		"PageTitle": "CloudiJudge | Online Programming Judge",
 	})
 }
 
