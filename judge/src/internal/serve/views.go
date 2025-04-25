@@ -158,7 +158,7 @@ func showProfileView(c *fiber.Ctx) error {
 	var submissions []Submission
 
 	err = db.Model(&Submission{}).
-		Where("owner_id = ?", user.ID).
+		Where("owner_id = ?", profileUser.ID).
 		Limit(3).
 		Order("created_at DESC").
 		Preload("Problem").

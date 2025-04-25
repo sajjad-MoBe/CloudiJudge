@@ -332,7 +332,7 @@ select:valid + .error-message::after {
     border-left: 4px solid var(--error-color);
 }
 .submission-item.waiting {
-    border-left: 4px solid #87CEEB;
+    border-left: 4px solid #f1b451;
 }
 .submission-status {
     display: flex;
@@ -344,7 +344,7 @@ select:valid + .error-message::after {
     color: var(--success-color);
 }
 .submission-status.waiting {
-    color: #24ade4;
+    color: #f4ae3e;
 }
 
 .submission-status.error {

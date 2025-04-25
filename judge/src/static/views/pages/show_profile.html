@@ -79,41 +79,45 @@
         </div>
 
         <!-- Recent Submissions -->
-        {{ if .Submissions}}
+        {{ if or .User.IsAdmin (eq .ProfileUser.ID .User.ID)}}
             <div class="submissions-section">
-                <h2>Recent Submissions</h2>
-                <div class="submissions-list">
-                    {{range .Submissions}}
-                        {{ if eq .Status "waiting" }}
-                            <div class="submission-item waiting">
-                        {{ else if eq .Status "success"}}
-                            <div class="submission-item success">
-                        {{ else}}
-                            <div class="submission-item error">
-                        {{end}}
-                            <div class="submission-title">{{ .Problem.Title}}</div>
+                {{ if .Submissions}}
+                    <h2>Recent Submissions</h2>
+                    <div class="submissions-list">
+                        {{range .Submissions}}
                             {{ if eq .Status "waiting" }}
-                                <i class="fas fa-clock"></i>
+                                <div class="submission-item waiting">
                             {{ else if eq .Status "success"}}
-                                <i class="fas fa-check-circle"></i>
+                                <div class="submission-item success">
                             {{ else}}
-                                <i class="fas fa-times-circle"></i>
+                                <div class="submission-item error">
                             {{end}}
+                                    <div class="submission-title">
+                                        <a href="/problemset/{{ .Problem.ID }}">{{ .Problem.Title}}</a>
+                                    </div>
+                                    {{ if eq .Status "waiting" }}
+                                        <i class="fas fa-clock"></i>
+                                    {{ else if eq .Status "success"}}
+                                        <i class="fas fa-check-circle"></i>
+                                    {{ else}}
+                                        <i class="fas fa-times-circle"></i>
+                                    {{end}}
+                                    
+                                    {{ if eq .Status "waiting" }}
+                                        <div class="submission-status waiting">{{ .Status }}</div>
+                                    {{ else if eq .Status "success"}}
+                                        <div class="submission-status success">{{ .Status }}</div>
+                                    {{ else}}
+                                        <div class="submission-status error">{{ .Status }}</div>
+                                    {{end}}
+                                
+                                    <div class="submission-time">{{ timeAgo .CreatedAt}}</div>
+                            </div>
                             
-                            {{ if eq .Status "waiting" }}
-                                <div class="submission-status waiting">{{ .Status }}</div>
-                            {{ else if eq .Status "success"}}
-                                <div class="submission-status success">{{ .Status }}</div>
-                            {{ else}}
-                                <div class="submission-status error">{{ .Status }}</div>
                             {{end}}
-                            
-                            <div class="submission-time">{{ timeAgo .CreatedAt}}</div>
                         </div>
-                    {{end}}
-                    
-                </div>
-                <a href="/submissions" class="view-all-link">View All Submissions →</a>
+                <a href="/user/{{ .ProfileUser.ID }}/submissions" class="view-all-link">View All Submissions →</a>
+                {{end}}
             </div>
         {{ end }}
     </div>
