@@ -675,7 +675,6 @@ func submissionsView(c *fiber.Ctx) error {
 		Offset(offset).Limit(limit).
 		Order("created_at DESC").
 		Preload("Problem").
-		Preload("Owner").
 		Find(&submissions).Error
 
 	if err != nil {
@@ -686,8 +685,8 @@ func submissionsView(c *fiber.Ctx) error {
 
 	return render(c, "show_submissions", fiber.Map{
 		"Submissions": submissions,
-		"User":        thisUser,
-		"Total":       total,
+		"ProfileUser": targetUser,
+		"Total":       int(total),
 		"Limit":       limit,
 		"Offset":      offset,
 		"Pages":       (int(total) + limit - 1) / limit, // Total pages

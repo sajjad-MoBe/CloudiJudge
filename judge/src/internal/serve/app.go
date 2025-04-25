@@ -15,7 +15,12 @@ func StartListening(port int) {
 	htmlEngine := html.New("static/views/", ".html")
 	htmlEngine.AddFunc("add", Add)
 	htmlEngine.AddFunc("sub", Sub)
+	htmlEngine.AddFunc("mul", Mul)
+	htmlEngine.AddFunc("mod", Mod)
+
 	htmlEngine.AddFunc("div", Div)
+	htmlEngine.AddFunc("seq", Seq)
+
 	htmlEngine.AddFunc("timeAgo", TimeAgo)
 
 	htmlEngine.AddFunc("truncate", Truncate)

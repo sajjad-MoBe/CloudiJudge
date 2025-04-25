@@ -61,11 +61,28 @@ func Add(a, b int) int {
 func Sub(a, b int) int {
 	return a - b
 }
+func Mul(a, b int) int {
+	return a * b
+}
 func Div(v1, v2 int) int {
 	if v2 == 0 {
 		return 0
 	}
 	return v1 / v2
+}
+func Mod(v1, v2 int) int {
+	if v2 == 0 {
+		return 0
+	}
+	return v1 % v2
+}
+
+func Seq(start, end int) []int {
+	result := make([]int, end-start+1)
+	for i := start; i <= end; i++ {
+		result[i-start] = i
+	}
+	return result
 }
 
 func Truncate(s string, maxLength int) string {
