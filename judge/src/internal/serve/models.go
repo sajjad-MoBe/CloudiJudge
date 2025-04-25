@@ -29,10 +29,10 @@ type Problem struct {
 
 type Submission struct {
 	gorm.Model
-	Status    string `gorm:"default:waiting" json:"status"`
-	Token     string `gorm:"type:text" json:"token"`
-	OwnerID   uint   `json:"user_id"`
-	Owner     User   `gorm:"foreignKey:OwnerID"`
-	ProblemID uint   `json:"problem_id"`
-	Problem   User   `gorm:"foreignKey:ProblemID"`
+	Status    string  `gorm:"default:waiting" json:"status"`
+	Token     string  `gorm:"type:text" json:"token"`
+	OwnerID   uint    `json:"user_id"`
+	Owner     User    `gorm:"foreignKey:OwnerID"`
+	ProblemID uint    `json:"problem_id"`
+	Problem   Problem `gorm:"foreignKey:ProblemID"`
 }
