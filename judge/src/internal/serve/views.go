@@ -29,7 +29,7 @@ func loginView(c *fiber.Ctx) error {
 	var message string
 
 	return render(c, "login", fiber.Map{
-		"PageTitle": "CloudiJudge | ورود کاربر",
+		"PageTitle": "CloudiJudge | login",
 		"Message":   message,
 		"Email":     email,
 	})
@@ -65,53 +65,53 @@ func handleLoginView(c *fiber.Ctx) error {
 	})
 
 }
-func setLoginError(c *fiber.Ctx, email, err string) {}
+
+func signupView(c *fiber.Ctx) error {
+	var email string
+
+	return render(c, "signup", fiber.Map{
+		"PageTitle": "CloudiJudge | signup",
+		"Email":     email,
+	})
+}
 
 func handleSignupView(c *fiber.Ctx) error {
 
+	var errorMsg string
+	var user User
 	// Parse form data
 	email := c.FormValue("email")
 	password := c.FormValue("password")
-	confirm_password := c.FormValue("confirm_password")
+	confirm_password := c.FormValue("confirm-password")
 	if password != confirm_password {
-		setLoginError(c, email, "رمز عبور و تایید آن یکسان نیستند.")
-		c.Redirect("/login")
+		errorMsg = "Password and confimation are not same"
+
+	} else if !isSecurePassword(password) {
+		errorMsg = "The chosen password must be at least 6 characters long and include letters and numbers."
+
+	} else if hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost); err != nil {
+		errorMsg = "Use another password."
+
+	} else if result := db.Where("email = ?", email).First(&user); result.Error == nil {
+		errorMsg = "The entered email is already registered. Please log in."
+
+	} else {
+
+		user = User{
+			Email:    email,
+			Password: string(hashedPassword),
+		}
+		db.Create(&user)
+		db.Commit()
+		return c.Redirect("/login?new=yes")
+
 	}
 
-	if !isSecurePassword(password) {
-		setLoginError(c, email, "رمز عبور انتخابی باید حداقل به طول ۶ و شامل حروف و اعداد باشد.")
-		c.Redirect("/login")
-	}
-
-	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
-	if err != nil {
-		setLoginError(c, email, "رمز عبور دیگری انتخاب کنید.")
-		c.Redirect("/login")
-	}
-	password = string(hashedPassword)
-
-	var user *User
-	result := db.Where("email = ?", email).First(user)
-	if result.Error == nil {
-		setLoginError(c, email, "ایمیل وارد شده قبلا ثبت نام کرده است. لطفا وارد شوید.")
-		return c.Redirect("/login")
-	}
-	user = &User{
-		Email:    email,
-		Password: password,
-	}
-	db.Create(user)
-	db.Commit()
-	sess, err := store.Get(c)
-	if err != nil {
-		setLoginError(c, email, "خطای ناشناخته ای رخ داد")
-		c.Redirect("/login")
-	}
-	sess.Set("user_id", user.ID)
-	sess.Save()
-
-	// Redirect to the problemset
-	return c.Redirect("/problemset")
+	return render(c, "signup", fiber.Map{
+		"PageTitle": "CloudiJudge | signup",
+		"Email":     email,
+		"Message":   errorMsg,
+	})
 }
 
 func signoutView(c *fiber.Ctx) error {

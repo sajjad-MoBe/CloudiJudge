@@ -22,10 +22,8 @@
 
     <div class="toast" id="toast"></div>
 
-    {{ if .Message }}
-        <div class="toast {{ if .Message }}show{{end}} danger" id="toast-err"
-            style="background-color: red">{{ .Message }}</div>
-    {{end}}
+    <div class="toast {{ if .Message }}show{{end}} danger" id="toast-err"
+        style="background-color: red">{{ .Message }}</div>
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
@@ -66,6 +64,13 @@
                 toast.textContent = message;
                 toast.classList.add('show');
                 setTimeout(() => toast.classList.remove('show'), 3000);
+            }
+
+            const urlParams = new URLSearchParams(window.location.search);
+
+            const isNew = urlParams.get('new') === 'yes';
+            if (isNew){
+                showToast("Registration was successful, please log in.")
             }
 
             setTimeout(() => {document.getElementById('toast-err').classList.remove('show')}, 3000);
