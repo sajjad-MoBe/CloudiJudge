@@ -588,7 +588,7 @@ func handleSubmitProblemView(c *fiber.Ctx) error {
 	if result.Error != nil {
 		return c.Status(fiber.StatusInternalServerError).SendString("خطا در دریافت اطلاعات کاربر")
 	}
-	submission := &Submission{
+	submission := Submission{
 		Status:    "waiting",
 		Token:     GenerateRandomToken(30),
 		OwnerID:   user.ID,
@@ -619,7 +619,6 @@ func handleSubmitProblemView(c *fiber.Ctx) error {
 
 		} else {
 			// send to code runner
-			db.Save(&submission)
 			return c.Redirect(fmt.Sprintf("/user/%d/submissions", user.ID))
 		}
 	}
@@ -693,4 +692,39 @@ func submissionsView(c *fiber.Ctx) error {
 		"Offset":      offset,
 		"Pages":       (int(total) + limit - 1) / limit, // Total pages
 	})
+}
+
+func downloadSubmissionFiles(c *fiber.Ctx) error {
+
+	filename, err := strconv.Atoi(c.Params("filename"))
+	if err != nil {
+		return error_404(c)
+	}
+
+	id, err := strconv.Atoi(c.Params("id"))
+	if err != nil {
+		return error_404(c)
+	}
+
+	var submission Submission
+	if err := db.First(&submission, filename).Error; err != nil || id != int(submission.OwnerID) {
+		return error_404(c)
+	}
+
+	userID := c.Locals("user_id").(uint)
+	var user User
+	result := db.First(&user, userID)
+	if result.Error != nil {
+		return c.Status(fiber.StatusInternalServerError).SendString("خطا در دریافت اطلاعات کاربر")
+	}
+	if submission.OwnerID != userID && !user.IsAdmin {
+		return error_403(c)
+	}
+
+	filePath := filepath.Join(os.Getenv("PROBLEM_UPLOAD_FOLDER"), fmt.Sprintf("%d/%d.go", submission.ProblemID, filename))
+	if _, err := os.Stat(filePath); os.IsNotExist(err) {
+		return error_404(c)
+	}
+
+	return c.Download(filePath, "main.go")
 }

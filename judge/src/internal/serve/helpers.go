@@ -78,8 +78,11 @@ func Truncate(s string, maxLength int) string {
 func TimeAgo(t time.Time) string {
 	duration := time.Since(t)
 
-	if duration < time.Hour {
+	if duration < 2*time.Hour {
 		minutes := int(duration.Minutes())
+		if minutes == 0 {
+			return "just now"
+		}
 		if minutes == 1 {
 			return "1 minute ago"
 		}

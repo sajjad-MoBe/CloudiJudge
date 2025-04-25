@@ -338,6 +338,7 @@ select:valid + .error-message::after {
     display: flex;
     align-items: center;
     gap: 0.5rem;
+    width: 20%;
 }
 
 .submission-status.success {
@@ -356,6 +357,10 @@ select:valid + .error-message::after {
     background-color: beige;
     border-radius: 5px;
     font-size: 13px;
+}
+
+.submission-title {
+    width: 25%;
 }
 
 .view-all-link {
@@ -689,4 +694,13 @@ select:valid + .error-message::after {
     background-color: #55bdd7;
     font-size: 13px;
     color: #eb0909;
+}
+
+.show-code-btn {
+    display: inline-block;
+    padding: 2px 6px;
+    border: 1px solid #46bbd5;
+    border-radius: 4px;
+    font-size: 13px;
+    color: #34070d;
 }

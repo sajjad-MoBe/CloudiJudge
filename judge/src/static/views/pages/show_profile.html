@@ -112,7 +112,8 @@
                                     {{end}}
                                 
                                     <div class="submission-time">{{ timeAgo .CreatedAt}}</div>
-                                    <div class="role-box">click</div>
+                                    <a href="/user/{{$.ProfileUser.ID}}/submissions/dl/{{.ID}}" class="show-code-btn" target="_blank">Download Code</a>
+                                    
 
                             </div>
                             
@@ -123,7 +124,7 @@
             </div>
         {{ end }}
     </div>
-
+    
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             const attemptedCount = parseInt(document.getElementById('attempted-count').textContent, 0);
