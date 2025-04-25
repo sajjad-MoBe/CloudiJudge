@@ -34,6 +34,8 @@ func StartListening(port int) {
 	app.Post("/user/:id/promote", isAuthenticated, promoteUserView)
 	app.Post("/user/:id/demote", isAuthenticated, demoteUserView)
 
+	app.Get("/user/:id/submissions", isAuthenticated, submissionsView)
+
 	// problemset
 	app.Get("/problemset", isAuthenticated, problemsetView)
 	app.Get("/problemset/add", isAuthenticated, addProblemView)

@@ -636,3 +636,66 @@ func handleSubmitProblemView(c *fiber.Ctx) error {
 		"User":      user,
 	})
 }
+
+func submissionsView(c *fiber.Ctx) error {
+
+	id, err := strconv.Atoi(c.Params("id"))
+	if err != nil {
+		return error_404(c)
+	}
+	userID := uint(id)
+	var targetUser User
+	result := db.First(&targetUser, userID)
+	if result.Error != nil {
+		fmt.Println(result.Error)
+		return error_404(c)
+	}
+
+	userID = c.Locals("user_id").(uint)
+	var thisUser User
+	result = db.First(&thisUser, userID)
+	if thisUser.ID != targetUser.ID {
+		if result.Error == nil {
+			if !thisUser.IsAdmin {
+				return error_403(c)
+			}
+		}
+	}
+
+	limit := c.QueryInt("limit", 10)  // Default limit = 10
+	offset := c.QueryInt("offset", 0) // Default offset = 0
+
+	if limit > 100 {
+		limit = 100 // Max limit = 100
+	}
+	if offset < 0 {
+		offset = 0
+	}
+
+	var submissions []Submission
+	var total int64
+
+	err = db.Model(&Submission{}).
+		Where("owner_id = ?", targetUser.ID).
+		Count(&total).
+		Offset(offset).Limit(limit).
+		Order("created_at DESC").
+		Preload("Problem").
+		Preload("Owner").
+		Find(&submissions).Error
+
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": "Failed to fetch submissions",
+		})
+	}
+
+	return render(c, "show_submissions", fiber.Map{
+		"Submissions": submissions,
+		"User":        thisUser,
+		"Total":       total,
+		"Limit":       limit,
+		"Offset":      offset,
+		"Pages":       (int(total) + limit - 1) / limit, // Total pages
+	})
+}

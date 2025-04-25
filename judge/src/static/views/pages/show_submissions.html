@@ -1,0 +1,34 @@
+<body>
+    <h1>Submissions</h1>
+    {{if eq .Total 0}}
+        <p>No submissions found!</p>
+    {{else}}
+        <table>
+            <thead>
+                <tr>
+                    <th>Problem Title</th>
+                    <th>Status</th>
+                    <th>code</th>
+                </tr>
+            </thead>
+            <tbody>
+                {{ range .Submissions }}
+                    <tr>
+                        <td><a href="/problemset/{{.Problem.ID}}">{{ .Problem.Title }}</a></td>
+                        <td>{{ .Status }}</td>
+                        <td><a href="/problemset/{{.Problem.ID}}/dl/input.txt" target="_blank">click to download</a></td>
+                    </tr>
+                {{ end }}
+            </tbody>
+        </table>
+    {{end}}
+    <div>
+        {{if gt .Offset 0}}
+            <a href="/problemset?limit={{.Limit}}&offset={{sub .Offset .Limit}}">Previous</a>
+        {{end}}
+
+        {{if lt (add .Offset .Limit) .Total}}
+            <a href="/problemset?limit={{.Limit}}&offset={{add .Offset .Limit}}">Next</a>
+        {{end}}
+    </div>
+</body>
