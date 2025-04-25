@@ -1,25 +1,145 @@
 <body>
-    <h1>{{.ProfileUser.ID}} - {{.ProfileUser.Email}}(
-            {{ if .ProfileUser.IsAdmin }}
-                Admin
-            {{ else }}
-                User
-            {{ end }}
-        )
+    <div class="container">
 
-    </h1>
-    {{ if .User.IsAdmin }}
-        {{ if .ProfileUser.IsAdmin }}
-            {{ if eq .ProfileUser.AdminCreatedByID .User.ID }}
-                <form action="/user/{{ .ProfileUser.ID }}/demote" method="POST">
-                    <button type="submit">Demote to User</button>
-                </form>
-            {{ end }}
-        {{ else }}
-            <form action="/user/{{ .ProfileUser.ID }}/promote" method="POST">
-                <button type="submit">Promote to Admin</button>
-            </form>
+        {{ if .User.IsAdmin }}
+            <div id="admin-indicator" class="admin-indicator">
+                <i class="fas fa-shield-alt"></i> Admin View
+            </div>
         {{ end }}
-    {{ end }}
-    <a href="/problemset">all Problems</a>
+
+        <!-- Profile Header -->
+        <div class="profile-header">
+            <div class="profile-avatar">
+                <i class="fas fa-user-circle"></i>
+            </div>
+            <h3 id="username">{{.ProfileUser.ID}} - {{.ProfileUser.Email}} 
+                {{ if .ProfileUser.IsAdmin }}
+                    <small class="role-box" id="user-role">Admin</small>
+                {{ else }}
+                    <small class="role-box" id="user-role">User</small>
+                {{ end }}
+            </h3>
+            <div class="user-role" st>
+                
+                {{ if .User.IsAdmin }}
+                    {{ if .ProfileUser.IsAdmin }}
+                        {{ if eq .ProfileUser.AdminCreatedByID .User.ID }}
+                            <form class="role-control" action="/user/{{ .ProfileUser.ID }}/demote" method="POST">
+                                <button class="small-button" type="submit">Demote to User</button>
+                            </form>
+                        {{ end }}
+                    {{ else }}
+                        <form class="role-control" action="/user/{{ .ProfileUser.ID }}/promote" method="POST">
+                            <button class="small-button" type="submit">Promote to Admin</button>
+                        </form>
+                        
+                    {{ end }}                    
+                {{ end }}
+                
+                
+            </div>
+        </div>
+
+        <!-- Stats Card -->
+        <div class="stats-card">
+            <div class="stat-item">
+                <div class="stat-value" id="attempted-count">{{ .ProfileUser.SolveAttemps }}</div>
+                <div class="stat-label">Attempted</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value" id="solved-count">{{.ProfileUser.SuccessAttemps}}</div>
+                <div class="stat-label">Solved</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value" id="success-rate">{{div .ProfileUser.SuccessAttemps .ProfileUser.SolveAttemps}}%</div>
+                <div class="stat-label">Success Rate</div>
+            </div>
+        </div>
+
+        <!-- Progress Bar -->
+        <div class="progress-container">
+            <div class="progress-bar">
+                <div class="progress-fill" id="progress-fill" style="width: 67%;"></div>
+            </div>
+        </div>
+
+        <!-- Badges Section -->
+        <div class="badges-section">
+            <h2>Achievements</h2>
+            <div class="badges-container">
+                <div class="badge" id="solver-badge">
+                    <i class="fas fa-trophy"></i>
+                    <span>Problem Solver</span>
+                </div>
+                <div class="badge" id="consistency-badge">
+                    <i class="fas fa-fire"></i>
+                    <span>Consistent</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Submissions -->
+        {{ if or .User.IsAdmin (eq .ProfileUser.ID .User.ID)}}
+            <div class="submissions-section">
+                {{ if .Submissions}}
+                    <h2>Recent Submissions</h2>
+                    <div class="submissions-list">
+                        {{range .Submissions}}
+                            {{ if eq .Status "waiting" }}
+                                <div class="submission-item waiting">
+                            {{ else if eq .Status "success"}}
+                                <div class="submission-item success">
+                            {{ else}}
+                                <div class="submission-item error">
+                            {{end}}
+                                    <div class="submission-title">
+                                        <a href="/problemset/{{ .Problem.ID }}">{{ .Problem.Title}}</a>
+                                    </div>
+                                    {{ if eq .Status "waiting" }}
+                                        <i class="fas fa-clock"></i>
+                                    {{ else if eq .Status "success"}}
+                                        <i class="fas fa-check-circle"></i>
+                                    {{ else}}
+                                        <i class="fas fa-times-circle"></i>
+                                    {{end}}
+                                    
+                                    {{ if eq .Status "waiting" }}
+                                        <div class="submission-status waiting">{{ .Status }}</div>
+                                    {{ else if eq .Status "success"}}
+                                        <div class="submission-status success">{{ .Status }}</div>
+                                    {{ else}}
+                                        <div class="submission-status error">{{ .Status }}</div>
+                                    {{end}}
+                                
+                                    <div class="submission-time">{{ timeAgo .CreatedAt}}</div>
+                                    <a href="/user/{{$.ProfileUser.ID}}/submissions/dl/{{.ID}}" class="show-code-btn" target="_blank">Download Code</a>
+                                    
+
+                            </div>
+                            
+                            {{end}}
+                        </div>
+                <a href="/user/{{ .ProfileUser.ID }}/submissions" class="view-all-link">View All Submissions →</a>
+                {{end}}
+            </div>
+        {{ end }}
+    </div>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const attemptedCount = parseInt(document.getElementById('attempted-count').textContent, 0);
+            const solvedCount = parseInt(document.getElementById('solved-count').textContent, 0);
+
+            
+            if (attemptedCount>= 5) {
+                document.getElementById('solver-badge').classList.add('active');
+            }
+            if (attemptedCount){
+                document.getElementById('progress-fill').style.width = solvedCount/attemptedCount+"%"
+                if (solvedCount/attemptedCount >= 50) {
+                    document.getElementById('consistency-badge').classList.add('active');
+                }
+            }
+        });
+    </script>
 </body>

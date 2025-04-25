@@ -15,26 +15,32 @@ func StartListening(port int) {
 	htmlEngine := html.New("static/views/", ".html")
 	htmlEngine.AddFunc("add", Add)
 	htmlEngine.AddFunc("sub", Sub)
+	htmlEngine.AddFunc("div", Div)
+	htmlEngine.AddFunc("timeAgo", TimeAgo)
+
 	htmlEngine.AddFunc("truncate", Truncate)
 
 	app := fiber.New(fiber.Config{
 		Views: htmlEngine,
 	})
+	app.Static("/static", "static/styles")
 
 	// Landing
 	app.Get("/", landingView)
 
-	// signin
-	app.Get("/signin", signinView)
-	app.Post("/signin", handleSigninView)
+	// login
+	app.Get("/login", loginView)
+	app.Post("/login", handleLoginView)
+	app.Get("/signup", signupView)
 	app.Post("/signup", handleSignupView)
-	app.Get("/signout", signoutView)
+	app.Get("/logout", logoutView)
 
 	app.Get("/user/:id", isAuthenticated, showProfileView)
 	app.Post("/user/:id/promote", isAuthenticated, promoteUserView)
 	app.Post("/user/:id/demote", isAuthenticated, demoteUserView)
 
 	app.Get("/user/:id/submissions", isAuthenticated, submissionsView)
+	app.Get("/user/:id/submissions/dl/:filename", isAuthenticated, downloadSubmissionFiles)
 
 	// problemset
 	app.Get("/problemset", isAuthenticated, problemsetView)

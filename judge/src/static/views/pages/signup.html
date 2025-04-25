@@ -1,0 +1,140 @@
+<body>
+    <div class="container">
+        <h1>Create Account</h1>
+        <form id="signup-form" action="/signup" method="post">
+            <div class="form-group">
+                <label for="email">Email</label>
+                <input type="text" id="email" name="email" placeholder="Choose a email" value="{{.Email}}" required>
+                <div class="error-message" id="email-error"></div>
+            </div>
+            <div class="form-group">
+                <label for="password">Password</label>
+                <input type="password" id="password" name="password" placeholder="Create a password" required>
+                <div class="error-message" id="password-error"></div>
+                <div class="password-requirements">
+                    <div class="requirement" id="length-req">
+                        <i class="fas fa-times"></i>
+                        <span>At least 6 characters</span>
+                    </div>
+                    <div class="requirement" id="number-req">
+                        <i class="fas fa-times"></i>
+                        <span>Contains a number</span>
+                    </div>
+                    <div class="requirement" id="letter-req">
+                        <i class="fas fa-times"></i>
+                        <span>Contains a letter</span>
+                    </div>
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="confirm-password">Confirm Password</label>
+                <input type="password" id="confirm-password" name="confirm-password" placeholder="Confirm your password" required>
+                <div class="error-message" id="confirm-password-error"></div>
+            </div>
+            
+            <button type="submit" id="signup-button">Create Account</button>
+        </form>
+        <p>Already have an account? <a href="/login">Login</a></p>
+    </div>
+
+    <div class="toast" id="toast"></div>
+    <div class="toast {{ if .Message }}show{{end}} danger" id="toast-err"
+            style="background-color: red">{{ .Message }}</div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const form = document.getElementById('signup-form');
+            const signupButton = document.getElementById('signup-button');
+            const toast = document.getElementById('toast');
+            const passwordInput = document.getElementById('password');
+            const confirmPasswordInput = document.getElementById('confirm-password');
+
+            // Password validation requirements
+            const requirements = {
+                length: { element: document.getElementById('length-req'), regex: /.{6,}/ },
+                number: { element: document.getElementById('number-req'), regex: /[0-9]/ },
+                letter: { element: document.getElementById('letter-req'), regex: /[a-zA-Z]/ }
+            };
+
+            // Check password requirements in real-time
+            passwordInput.addEventListener('input', function() {
+                const password = this.value;
+                Object.entries(requirements).forEach(([key, req]) => {
+                    const isValid = req.regex.test(password);
+                    req.element.classList.toggle('valid', isValid);
+                    req.element.classList.toggle('invalid', !isValid);
+                    req.element.querySelector('i').className = `fas fa-${isValid ? 'check' : 'times'}`;
+                });
+            });
+
+            // Check password match in real-time
+            confirmPasswordInput.addEventListener('input', function() {
+                const password = passwordInput.value;
+                const confirmPassword = this.value;
+                const errorElement = document.getElementById('confirm-password-error');
+                
+                if (confirmPassword && password !== confirmPassword) {
+                    errorElement.textContent = 'Passwords do not match';
+                    errorElement.style.display = 'block';
+                } else {
+                    errorElement.style.display = 'none';
+                }
+            });
+
+            form.addEventListener('submit', async function(e) {
+                
+                // Clear previous error messages
+                document.querySelectorAll('.error-message').forEach(el => el.style.display = 'none');
+                
+                const email = document.getElementById('email').value.trim();
+                const password = passwordInput.value;
+                const confirmPassword = confirmPasswordInput.value;
+
+                // Validation
+                let isValid = true;
+
+                if (!email) {
+                    document.getElementById('email-error').textContent = 'Email is required';
+                    document.getElementById('email-error').style.display = 'block';
+                    isValid = false;
+                }
+
+                if (!password) {
+                    document.getElementById('password-error').textContent = 'Password is required';
+                    document.getElementById('password-error').style.display = 'block';
+                    isValid = false;
+                } else if (!Object.values(requirements).every(req => req.regex.test(password))) {
+                    document.getElementById('password-error').textContent = 'Password does not meet requirements';
+                    document.getElementById('password-error').style.display = 'block';
+                    isValid = false;
+                }
+
+                if (!confirmPassword) {
+                    document.getElementById('confirm-password-error').textContent = 'Please confirm your password';
+                    document.getElementById('confirm-password-error').style.display = 'block';
+                    isValid = false;
+                } else if (password !== confirmPassword) {
+                    document.getElementById('confirm-password-error').textContent = 'Passwords do not match';
+                    document.getElementById('confirm-password-error').style.display = 'block';
+                    isValid = false;
+                }
+                
+
+                if (!isValid){
+                    e.preventDefault();
+                    return;
+                } 
+
+
+            });
+
+            function showToast(message) {
+                toast.textContent = message;
+                toast.classList.add('show');
+                setTimeout(() => toast.classList.remove('show'), 3000);
+            }
+            
+            setTimeout(() => {document.getElementById('toast-err').classList.remove('show')}, 3000);
+        });
+    </script>
+</body>

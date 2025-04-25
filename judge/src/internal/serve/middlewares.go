@@ -35,7 +35,7 @@ func isAuthenticated(c *fiber.Ctx) error {
 	}
 	userID := sess.Get("user_id")
 	if userID == nil {
-		return c.Redirect("/signin")
+		return c.Redirect("/login")
 	}
 	c.Locals("user_id", userID)
 

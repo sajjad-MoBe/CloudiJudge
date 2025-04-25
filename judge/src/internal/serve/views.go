@@ -13,7 +13,14 @@ import (
 
 // Template handling function
 func render(c *fiber.Ctx, name string, data interface{}) error {
-	return c.Render("pages/"+name, data, "layouts/main")
+	if name[:4] == "sign" {
+		return c.Render("pages/"+name, data, "layouts/auth")
+
+	} else if name == "landing" {
+		return c.Render("pages/"+name, data, "layouts/main")
+	}
+	return c.Render("pages/"+name, data, "layouts/dashboard")
+
 }
 
 func error_404(c *fiber.Ctx) error {
@@ -24,132 +31,108 @@ func error_403(c *fiber.Ctx) error {
 	return c.Status(403).Render("pages/error_403", fiber.Map{}, "layouts/main")
 }
 
-func setSigninError(c *fiber.Ctx, email, errMsg string) {
-	sess, err := store.Get(c)
-	if err == nil {
-		sess.Set("siginError", errMsg)
-		sess.Set("email", email)
-		sess.Save()
-	}
-}
-
-func signinView(c *fiber.Ctx) error {
+func loginView(c *fiber.Ctx) error {
 	var email string
 	var message string
 
-	sess, err := store.Get(c)
-	if err == nil {
-		tmp := sess.Get("siginError")
-		if tmp != nil {
-			message = tmp.(string)
-			sess.Delete("siginError")
-			sess.Save()
-		}
-		tmp = sess.Get("email")
-		if tmp != nil {
-			email = tmp.(string)
-			sess.Delete("email")
-			sess.Save()
-		}
-	}
-
-	return render(c, "signin", fiber.Map{
-		"PageTitle": "CloudiJudge | ورود کاربر",
+	return render(c, "login", fiber.Map{
+		"PageTitle": "CloudiJudge | login",
 		"Message":   message,
 		"Email":     email,
 	})
 }
 
-func handleSigninView(c *fiber.Ctx) error {
+func handleLoginView(c *fiber.Ctx) error {
 
-	// Parse form data
 	email := c.FormValue("email")
 	password := c.FormValue("password")
 
-	// Validate user credentials
+	var errorMsg string
 	var user User
 	result := db.Where("email = ?", email).First(&user)
 	if result.Error != nil {
-		setSigninError(c, email, "ایمیل یا رمز عبور وارد شده معتبر نمیباشد.")
-		return c.Redirect("/signin")
-	}
-	err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password))
-	if err != nil {
-		setSigninError(c, email, "ایمیل یا رمز عبور وارد شده معتبر نمیباشد.")
-	}
+		errorMsg = "Email or password is invalid!"
 
-	sess, err := store.Get(c)
-	if err != nil {
-		setSigninError(c, email, "خطای ناشناخته ای رخ داد")
-		c.Redirect("/signin")
-	}
-	sess.Set("user_id", user.ID)
-	sess.Save()
+	} else if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password)); err != nil {
+		errorMsg = "Email or password is invalid!"
 
-	// Redirect to the problemset
-	return c.Redirect("/problemset")
+	} else if sess, err := store.Get(c); err != nil {
+		errorMsg = "An unknown error has occurred!"
+
+	} else {
+		sess.Set("user_id", user.ID)
+		sess.Save()
+
+		return c.Redirect("/problemset")
+	}
+	return render(c, "login", fiber.Map{
+		"PageTitle": "CloudiJudge | login",
+		"Message":   errorMsg,
+		"Email":     email,
+	})
+
+}
+
+func signupView(c *fiber.Ctx) error {
+	var email string
+
+	return render(c, "signup", fiber.Map{
+		"PageTitle": "CloudiJudge | signup",
+		"Email":     email,
+	})
 }
 
 func handleSignupView(c *fiber.Ctx) error {
 
+	var errorMsg string
+	var user User
 	// Parse form data
 	email := c.FormValue("email")
 	password := c.FormValue("password")
-	confirm_password := c.FormValue("confirm_password")
-
+	confirm_password := c.FormValue("confirm-password")
 	if password != confirm_password {
-		setSigninError(c, email, "رمز عبور و تایید آن یکسان نیستند.")
-		c.Redirect("/signin")
+		errorMsg = "Password and confimation are not same"
+
+	} else if !isSecurePassword(password) {
+		errorMsg = "The chosen password must be at least 6 characters long and include letters and numbers."
+
+	} else if hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost); err != nil {
+		errorMsg = "Use another password."
+
+	} else if result := db.Where("email = ?", email).First(&user); result.Error == nil {
+		errorMsg = "The entered email is already registered. Please log in."
+
+	} else {
+
+		user = User{
+			Email:    email,
+			Password: string(hashedPassword),
+		}
+		db.Create(&user)
+		db.Commit()
+		return c.Redirect("/login?new=yes")
+
 	}
 
-	if !isSecurePassword(password) {
-		setSigninError(c, email, "رمز عبور انتخابی باید حداقل به طول ۶ و شامل حروف و اعداد باشد.")
-		c.Redirect("/signin")
-	}
-
-	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
-	if err != nil {
-		setSigninError(c, email, "رمز عبور دیگری انتخاب کنید.")
-		c.Redirect("/signin")
-	}
-	password = string(hashedPassword)
-
-	var user *User
-	result := db.Where("email = ?", email).First(user)
-	if result.Error == nil {
-		setSigninError(c, email, "ایمیل وارد شده قبلا ثبت نام کرده است. لطفا وارد شوید.")
-		return c.Redirect("/signin")
-	}
-	user = &User{
-		Email:    email,
-		Password: password,
-	}
-	db.Create(user)
-	db.Commit()
-	sess, err := store.Get(c)
-	if err != nil {
-		setSigninError(c, email, "خطای ناشناخته ای رخ داد")
-		c.Redirect("/signin")
-	}
-	sess.Set("user_id", user.ID)
-	sess.Save()
-
-	// Redirect to the problemset
-	return c.Redirect("/problemset")
+	return render(c, "signup", fiber.Map{
+		"PageTitle": "CloudiJudge | signup",
+		"Email":     email,
+		"Message":   errorMsg,
+	})
 }
 
-func signoutView(c *fiber.Ctx) error {
+func logoutView(c *fiber.Ctx) error {
 	sess, err := store.Get(c)
 	if err == nil {
 		sess.Destroy()
 	}
 
-	return c.Redirect("/signin")
+	return c.Redirect("/login")
 }
 
 func landingView(c *fiber.Ctx) error {
 	return render(c, "landing", fiber.Map{
-		"PageTitle": "CloudiJudge | صفحه اصلی",
+		"PageTitle": "CloudiJudge | Online Programming Judge",
 	})
 }
 
@@ -172,11 +155,23 @@ func showProfileView(c *fiber.Ctx) error {
 	if result.Error != nil {
 		return error_404(c)
 	}
+	var submissions []Submission
+
+	err = db.Model(&Submission{}).
+		Where("owner_id = ?", profileUser.ID).
+		Limit(3).
+		Order("created_at DESC").
+		Preload("Problem").
+		Find(&submissions).Error
+	if err != nil {
+		clear(submissions)
+	}
 
 	return render(c, "show_profile", fiber.Map{
 		"PageTitle":   "CloudiJudge | پروفایل کاربر",
 		"ProfileUser": profileUser,
 		"User":        user,
+		"Submissions": submissions,
 	})
 }
 
@@ -593,7 +588,7 @@ func handleSubmitProblemView(c *fiber.Ctx) error {
 	if result.Error != nil {
 		return c.Status(fiber.StatusInternalServerError).SendString("خطا در دریافت اطلاعات کاربر")
 	}
-	submission := &Submission{
+	submission := Submission{
 		Status:    "waiting",
 		Token:     GenerateRandomToken(30),
 		OwnerID:   user.ID,
@@ -624,7 +619,6 @@ func handleSubmitProblemView(c *fiber.Ctx) error {
 
 		} else {
 			// send to code runner
-			db.Save(&submission)
 			return c.Redirect(fmt.Sprintf("/user/%d/submissions", user.ID))
 		}
 	}
@@ -698,4 +692,39 @@ func submissionsView(c *fiber.Ctx) error {
 		"Offset":      offset,
 		"Pages":       (int(total) + limit - 1) / limit, // Total pages
 	})
+}
+
+func downloadSubmissionFiles(c *fiber.Ctx) error {
+
+	filename, err := strconv.Atoi(c.Params("filename"))
+	if err != nil {
+		return error_404(c)
+	}
+
+	id, err := strconv.Atoi(c.Params("id"))
+	if err != nil {
+		return error_404(c)
+	}
+
+	var submission Submission
+	if err := db.First(&submission, filename).Error; err != nil || id != int(submission.OwnerID) {
+		return error_404(c)
+	}
+
+	userID := c.Locals("user_id").(uint)
+	var user User
+	result := db.First(&user, userID)
+	if result.Error != nil {
+		return c.Status(fiber.StatusInternalServerError).SendString("خطا در دریافت اطلاعات کاربر")
+	}
+	if submission.OwnerID != userID && !user.IsAdmin {
+		return error_403(c)
+	}
+
+	filePath := filepath.Join(os.Getenv("PROBLEM_UPLOAD_FOLDER"), fmt.Sprintf("%d/%d.go", submission.ProblemID, filename))
+	if _, err := os.Stat(filePath); os.IsNotExist(err) {
+		return error_404(c)
+	}
+
+	return c.Download(filePath, "main.go")
 }
