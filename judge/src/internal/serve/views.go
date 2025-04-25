@@ -13,7 +13,14 @@ import (
 
 // Template handling function
 func render(c *fiber.Ctx, name string, data interface{}) error {
-	return c.Render("pages/"+name, data, "layouts/main")
+	if name[:4] == "sign" {
+		return c.Render("pages/"+name, data, "layouts/auth")
+
+	} else if name == "landing" {
+		return c.Render("pages/"+name, data, "layouts/main")
+	}
+	return c.Render("pages/"+name, data, "layouts/dashboard")
+
 }
 
 func error_404(c *fiber.Ctx) error {
