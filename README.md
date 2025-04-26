@@ -127,7 +127,7 @@ Follow these steps to set up and run the **CloudiJudge** project:
 
   
 
-3.  **Set Up Environment Variables**
+3.  **Start project**
 
 	Start the application using Docker Compose:
 
