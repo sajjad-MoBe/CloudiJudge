@@ -1,12 +1,17 @@
 package serve
 
 import (
+	"bytes"
 	"crypto/rand"
 	"encoding/base64"
+	"encoding/json"
 	"fmt"
+	"net/http"
 	"strconv"
 	"time"
 	"unicode"
+
+	"github.com/sajjad-MoBe/CloudiJudge/judge/src/internal/code_runner"
 )
 
 func GenerateRandomToken(length int) string {
@@ -119,4 +124,34 @@ func TimeAgo(t time.Time) string {
 		}
 		return fmt.Sprintf("%d days ago", days)
 	}
+}
+
+func sendCodeToRun(submission Submission, problem Problem) {
+	run := code_runner.Run{
+		TimeLimitMs:   problem.TimeLimit,
+		PproblemID:    int(problem.ID),
+		SubmissionID:  int(submission.ID),
+		CallbackToken: submission.Token,
+	}
+	jsonData, err := json.Marshal(run)
+	if err != nil {
+		fmt.Println("Error marshalling JSON:", err)
+		return
+	}
+
+	// dynamic code runner
+	resp, err := http.Post("http://localhost:2/run", "application/json", bytes.NewBuffer(jsonData))
+	if err != nil {
+		fmt.Println("Error sending request:", err)
+		return
+	}
+	defer resp.Body.Close()
+
+	var responseBody map[string]interface{}
+	if err := json.NewDecoder(resp.Body).Decode(&responseBody); err != nil {
+		submission.Status = "Compilation failed"
+		db.Save(&submission)
+		return
+	}
+
 }

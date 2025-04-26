@@ -87,7 +87,7 @@
                         {{range .Submissions}}
                             {{ if eq .Status "waiting" }}
                                 <div class="submission-item waiting">
-                            {{ else if eq .Status "success"}}
+                            {{ else if eq .Status "Accepted"}}
                                 <div class="submission-item success">
                             {{ else}}
                                 <div class="submission-item error">
@@ -97,7 +97,7 @@
                                     </div>
                                     {{ if eq .Status "waiting" }}
                                         <i class="fas fa-clock"></i>
-                                    {{ else if eq .Status "success"}}
+                                    {{ else if eq .Status "Accepted"}}
                                         <i class="fas fa-check-circle"></i>
                                     {{ else}}
                                         <i class="fas fa-times-circle"></i>
@@ -105,7 +105,7 @@
                                     
                                     {{ if eq .Status "waiting" }}
                                         <div class="submission-status waiting">{{ .Status }}</div>
-                                    {{ else if eq .Status "success"}}
+                                    {{ else if eq .Status "Accepted"}}
                                         <div class="submission-status success">{{ .Status }}</div>
                                     {{ else}}
                                         <div class="submission-status error">{{ .Status }}</div>

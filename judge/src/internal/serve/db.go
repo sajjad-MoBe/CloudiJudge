@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"time"
 
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
@@ -28,6 +29,10 @@ func connectDatabase() {
 		log.Fatalf("Failed to migrate database: %v", err)
 		os.Exit(1)
 	}
+	tenMinutesAgo := time.Now().Add(-10 * time.Minute)
+	db.Model(&Submission{}).
+		Where("updated_at < ? AND status == ?", tenMinutesAgo, "waiting").
+		Update("status", "Compilation failed")
 
 	log.Println("Database connected and migrated")
 }

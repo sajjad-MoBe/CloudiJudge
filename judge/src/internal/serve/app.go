@@ -61,6 +61,8 @@ func StartListening(port int) {
 
 	app.Get("/problemset/:id/:command", isAuthenticated, handlePublishProblemView) // command is publish and unpublish
 
+	app.Post("/code/callback", runCodeCallbackView)
+
 	log.Fatal(app.Listen(fmt.Sprintf(":%d", port)))
 
 }

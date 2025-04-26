@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/gofiber/fiber/v2"
+	"github.com/sajjad-MoBe/CloudiJudge/judge/src/internal/code_runner"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -619,6 +620,7 @@ func handleSubmitProblemView(c *fiber.Ctx) error {
 
 		} else {
 			// send to code runner
+			sendCodeToRun(submission, problem)
 			return c.Redirect(fmt.Sprintf("/user/%d/submissions", user.ID))
 		}
 	}
@@ -726,4 +728,21 @@ func downloadSubmissionFiles(c *fiber.Ctx) error {
 	}
 
 	return c.Download(filePath, "main.go")
+}
+
+func runCodeCallbackView(c *fiber.Ctx) error {
+	var data code_runner.ResultData
+
+	if err := c.BodyParser(&data); err != nil {
+		return c.Status(fiber.StatusBadRequest).SendString("")
+	}
+	var submission Submission
+	if err := db.Where("token = ?", data.CallbackToken).First(&submission).Error; err != nil {
+		return c.Status(fiber.StatusBadRequest).SendString("")
+	}
+	submission.Status = data.Status
+	db.Save(&submission)
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{
+		"ok": true,
+	})
 }

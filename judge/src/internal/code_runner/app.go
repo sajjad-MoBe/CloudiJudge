@@ -13,7 +13,7 @@ func StartListening(port int) {
 	queueManager = NewQueueManager(20)
 	app := fiber.New(fiber.Config{})
 
-	app.Get("/run", runCodeView)
+	app.Post("/run", runCodeView)
 
 	log.Fatal(app.Listen(fmt.Sprintf(":%d", port)))
 

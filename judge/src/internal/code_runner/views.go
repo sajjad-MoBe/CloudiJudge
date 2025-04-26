@@ -13,5 +13,7 @@ func runCodeView(c *fiber.Ctx) error {
 		})
 	}
 	queueManager.Enqueue(data)
-	return c.SendString("Docker project started!")
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{
+		"ok": true,
+	})
 }

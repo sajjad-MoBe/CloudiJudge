@@ -2,8 +2,11 @@ package code_runner
 
 import (
 	"bufio"
+	"bytes"
 	"context"
+	"encoding/json"
 	"fmt"
+	"net/http"
 	"os"
 	"path/filepath"
 	"strings"
@@ -13,6 +16,11 @@ import (
 	"github.com/docker/docker/client"
 	"github.com/docker/go-units"
 )
+
+type ResultData struct {
+	CallbackToken string `json:"callback_token"`
+	Status        string `json:"Status"`
+}
 
 func runCodeInsideContainer(timeLimitMs, problemID, submissionID int) string {
 	timeLimit := fmt.Sprintf("%.2f", float64(timeLimitMs)/float64(1000))
@@ -150,5 +158,21 @@ func runCodeInsideContainer(timeLimitMs, problemID, submissionID int) string {
 }
 
 func sendRunCallBack(result string, run Run) {
-	fmt.Println(result, run.CallbackToken)
+	resultData := ResultData{
+		CallbackToken: run.CallbackToken,
+		Status:        result,
+	}
+	jsonData, err := json.Marshal(resultData)
+	if err != nil {
+		fmt.Println("Error marshalling JSON:", err)
+		return
+	}
+
+	resp, err := http.Post("http://localhost:80/code/callback", "application/json", bytes.NewBuffer(jsonData))
+	if err != nil {
+		fmt.Println("Error sending request:", err)
+		return
+	}
+	defer resp.Body.Close()
+
 }
