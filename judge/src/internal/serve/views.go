@@ -743,10 +743,15 @@ func runCodeCallbackView(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusBadRequest).SendString("")
 	}
 	var submission Submission
-	if err := db.Where("token = ?", data.CallbackToken).First(&submission).Error; err != nil {
+	if err := db.Where("token = ?", data.CallbackToken).Preload("Owner").First(&submission).Error; err != nil {
 		return c.Status(fiber.StatusBadRequest).SendString("")
 	}
 	submission.Status = data.Status
+	if data.Status == "Accepted" {
+		user := submission.Owner
+		user.SuccessAttemps += 1
+		db.Save(&user)
+	}
 	db.Save(&submission)
 	return c.Status(fiber.StatusOK).JSON(fiber.Map{
 		"ok": true,
