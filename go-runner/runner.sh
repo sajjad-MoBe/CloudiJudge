@@ -1,11 +1,12 @@
 #!/bin/bash
 
-if [ -z "$1" ]; then
-  echo "Usage: $0 <time_limit_s>"
+if [ -z "$1" ] || [ -z "$2" ]; then
+  echo "Usage: $0 <time_limit_s> <memory_limit_mb>"
   exit 1
 fi
 
 TIME_LIMIT_S=$1
+MEM_LIMIT_MB=$2
 
 TEMP_DIR=$(mktemp -d)
 
@@ -18,6 +19,8 @@ if [ $? -ne 0 ]; then
   rm -rf "$TEMP_DIR"
   exit 1
 fi
+
+ulimit -v $((MEM_LIMIT_MB * 1024 * 1024))
 
 timeout -s KILL "$TIME_LIMIT_S" "$TEMP_DIR/code" < "$TEMP_DIR/input.txt" > "$TEMP_DIR/actual_output.txt" 2>/dev/null
 EXIT_CODE=$?

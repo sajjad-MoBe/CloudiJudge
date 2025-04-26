@@ -23,7 +23,8 @@ type ResultData struct {
 }
 
 func runCodeInsideContainer(run Run) string {
-	timeLimit := fmt.Sprintf("%.2f", float64(run.TimeLimitMs)/float64(1000))
+	timeLimit := fmt.Sprintf("%.3f", float64(run.TimeLimitMs)/float64(1000))
+	memoryLimitMb := fmt.Sprintf("%d", run.MemoryLimitMb)
 
 	ctx := context.Background()
 	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
@@ -37,7 +38,7 @@ func runCodeInsideContainer(run Run) string {
 
 	config := &container.Config{
 		Image: "go-code-runner",
-		Cmd:   []string{timeLimit},
+		Cmd:   []string{timeLimit, memoryLimitMb},
 	}
 
 	hostConfig := &container.HostConfig{
@@ -57,7 +58,7 @@ func runCodeInsideContainer(run Run) string {
 		},
 		Resources: container.Resources{
 			CPUCount: 1,
-			Memory:   int64(run.MemoryLimitMb+10) * 1024 * 1024, // 10mb for container
+			Memory:   int64(run.MemoryLimitMb+300) * 1024 * 1024, // 300mb for container
 			NanoCPUs: 1_000_000_000,
 			Ulimits:  []*units.Ulimit{{Name: "nofile", Soft: 1024, Hard: 1024}},
 		},
@@ -115,7 +116,7 @@ func runCodeInsideContainer(run Run) string {
 		return "Compilation failed"
 	case status := <-statusCh:
 		if status.StatusCode != 0 {
-			fmt.Printf("Compilation failed")
+			fmt.Println("Compilation failed", status.Error)
 			return "Compilation failed"
 		}
 	}

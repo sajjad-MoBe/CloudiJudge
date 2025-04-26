@@ -422,7 +422,10 @@ func handleEditProblemView(c *fiber.Ctx) error {
 		errorMsg = "محدودیت زمانی باید یک عدد مثبت باشد."
 
 	} else if parseInt(c.FormValue("memory_limit")) <= 0 {
-		errorMsg = "محدودیت حافظه باید یک عدد مثبت باشد."
+		errorMsg = "محدودیت حافظه باید یک عدد مثبت کمتر از هزار باشد."
+
+	} else if parseInt(c.FormValue("memory_limit")) >= 1000 {
+		errorMsg = "محدودیت حافظه باید یک عدد مثبت کمتر از هزار باشد."
 
 	} else {
 
