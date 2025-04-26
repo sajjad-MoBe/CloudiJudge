@@ -100,6 +100,9 @@ func handleSignupView(c *fiber.Ctx) error {
 	} else if hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost); err != nil {
 		errorMsg = "Use another password."
 
+	} else if !isValidEmail(email) {
+		errorMsg = "The entred email is not valid."
+
 	} else if result := db.Where("email = ?", email).First(&user); result.Error == nil {
 		errorMsg = "The entered email is already registered. Please log in."
 

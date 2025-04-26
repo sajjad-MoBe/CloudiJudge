@@ -7,6 +7,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"net/mail"
 	"strconv"
 	"time"
 	"unicode"
@@ -40,6 +41,11 @@ func isSecurePassword(password string) bool {
 	}
 
 	return hasLetter && hasNumber
+}
+
+func isValidEmail(email string) bool {
+	_, err := mail.ParseAddress(email)
+	return err == nil
 }
 
 func parseInt(value string) int {
