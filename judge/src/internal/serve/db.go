@@ -29,14 +29,14 @@ func connectDatabase() {
 		log.Fatalf("Failed to migrate database: %v", err)
 		os.Exit(1)
 	}
-	tenMinutesAgo := time.Now().Add(-10 * time.Minute)
+	minutesAgo := time.Now().Add(-60 * time.Minute)
 	db.Model(&Submission{}).
-		Where("updated_at < ? AND status = ?", tenMinutesAgo, "waiting").
+		Where("updated_at < ? AND status = ?", minutesAgo, "waiting").
 		Update("status", "Compilation failed")
 
 	var submissions []Submission
 	err = db.Model(&Submission{}).
-		Where("updated_at > ? AND status = ?", tenMinutesAgo, "waiting").
+		Where("updated_at > ? AND status = ?", minutesAgo, "waiting").
 		Preload("Problem").
 		Find(&submissions).Error
 
