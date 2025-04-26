@@ -22,7 +22,7 @@ var serveCmd = &cobra.Command{
 			os.Exit(1)
 		}
 
-		fmt.Println("server is listenint on port", port)
+		fmt.Println("server is listening on port", port)
 		serve.StartListening(port)
 	},
 }

@@ -1,34 +1,72 @@
 <body>
-    <h1>Submissions</h1>
-    {{if eq .Total 0}}
-        <p>No submissions found!</p>
-    {{else}}
-        <table>
-            <thead>
-                <tr>
-                    <th>Problem Title</th>
-                    <th>Status</th>
-                    <th>code</th>
-                </tr>
-            </thead>
-            <tbody>
-                {{ range .Submissions }}
-                    <tr>
-                        <td><a href="/problemset/{{.Problem.ID}}">{{ .Problem.Title }}</a></td>
-                        <td>{{ .Status }}</td>
-                        <td><a href="/problemset/{{.Problem.ID}}/dl/input.txt" target="_blank">click to download</a></td>
-                    </tr>
-                {{ end }}
-            </tbody>
-        </table>
-    {{end}}
-    <div>
-        {{if gt .Offset 0}}
-            <a href="/problemset?limit={{.Limit}}&offset={{sub .Offset .Limit}}">Previous</a>
-        {{end}}
+    <div class="container">
+        
+        {{if eq .Total 0}}
+            <h1>No submissions found!</h1>
+        {{else}}
+            <h1>submissions</h1>
+            <div class="submissions-section">
+                <div class="submissions-list">
+                    {{range .Submissions}}
+                        {{ if eq .Status "waiting" }}
+                            <div class="submission-item waiting">
+                        {{ else if eq .Status "Accepted"}}
+                            <div class="submission-item success">
+                        {{ else}}
+                            <div class="submission-item error">
+                        {{end}}
+                            <div class="submission-title">
+                                <a href="/problemset/{{ .Problem.ID }}">{{ .Problem.Title}}</a>
+                            </div>
+                            {{ if eq .Status "waiting" }}
+                                <i class="fas fa-clock"></i>
+                            {{ else if eq .Status "Accepted"}}
+                                <i class="fas fa-check-circle"></i>
+                            {{ else}}
+                                <i class="fas fa-times-circle"></i>
+                            {{end}}
+                            
+                            {{ if eq .Status "waiting" }}
+                                <div class="submission-status waiting">{{ .Status }}</div>
+                            {{ else if eq .Status "Accepted"}}
+                                <div class="submission-status success">{{ .Status }}</div>
+                            {{ else}}
+                                <div class="submission-status error">{{ .Status }}</div>
+                            {{end}}
+                        
+                            <div class="submission-time">{{ timeAgo .CreatedAt}}</div>
+                            <a href="/user/{{$.ProfileUser.ID}}/submissions/dl/{{.ID}}" class="show-code-btn" target="_blank">Download Code</a>
+                        
 
-        {{if lt (add .Offset .Limit) .Total}}
-            <a href="/problemset?limit={{.Limit}}&offset={{add .Offset .Limit}}">Next</a>
+                        </div>
+                        
+                    {{end}}
+                </div>
+            </div>
         {{end}}
+        <div>
+            
+            {{if gt .Offset 0}}
+                <!-- <a href="/user/{{.ProfileUser.ID}}/submissions?limit={{.Limit}}&offset=0"><<</a> -->
+                <a href="/user/{{.ProfileUser.ID}}/submissions?limit={{.Limit}}&offset={{sub .Offset .Limit}}">
+                    <i class="fas fa-chevron-left"></i>
+                </a>
+                {{ if gt .Limit (sub .Total .Offset)}}
+                    <span>page: {{add (div .Total .Limit) 1}}</span>
+                {{ else }}
+                    <span>page: {{div .Total .Limit}}</span>
+                {{ end }}
+            {{ else }}
+                <span>page: 1</span>
+            {{end}}
+    
+            {{if lt (add .Offset .Limit) .Total}}
+                <a href="/user/{{.ProfileUser.ID}}/submissions?limit={{.Limit}}&offset={{add .Offset .Limit}}">
+                    <i class="fas fa-chevron-right"></i>
+                </a>
+                <!-- <a href="/user/{{.ProfileUser.ID}}/submissions?limit={{.Limit}}&offset={{sub .Total .Limit}}">>></a> -->
+            {{end}}
+        </div>
     </div>
+    
 </body>

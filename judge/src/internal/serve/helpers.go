@@ -1,12 +1,18 @@
 package serve
 
 import (
+	"bytes"
 	"crypto/rand"
 	"encoding/base64"
+	"encoding/json"
 	"fmt"
+	"net/http"
+	"net/mail"
 	"strconv"
 	"time"
 	"unicode"
+
+	"github.com/sajjad-MoBe/CloudiJudge/judge/src/internal/code_runner"
 )
 
 func GenerateRandomToken(length int) string {
@@ -37,13 +43,9 @@ func isSecurePassword(password string) bool {
 	return hasLetter && hasNumber
 }
 
-func parseFloat32(value string) float32 {
-	if value == "" {
-		return 0
-	}
-	var result float32
-	fmt.Sscanf(value, "%f", &result)
-	return result
+func isValidEmail(email string) bool {
+	_, err := mail.ParseAddress(email)
+	return err == nil
 }
 
 func parseInt(value string) int {
@@ -61,11 +63,28 @@ func Add(a, b int) int {
 func Sub(a, b int) int {
 	return a - b
 }
+func Mul(a, b int) int {
+	return a * b
+}
 func Div(v1, v2 int) int {
 	if v2 == 0 {
 		return 0
 	}
 	return v1 / v2
+}
+func Mod(v1, v2 int) int {
+	if v2 == 0 {
+		return 0
+	}
+	return v1 % v2
+}
+
+func Seq(start, end int) []int {
+	result := make([]int, end-start+1)
+	for i := start; i <= end; i++ {
+		result[i-start] = i
+	}
+	return result
 }
 
 func Truncate(s string, maxLength int) string {
@@ -102,4 +121,35 @@ func TimeAgo(t time.Time) string {
 		}
 		return fmt.Sprintf("%d days ago", days)
 	}
+}
+
+func sendCodeToRun(submission Submission, problem Problem) {
+	run := code_runner.Run{
+		TimeLimitMs:   problem.TimeLimit,
+		MemoryLimitMb: int(problem.MemoryLimit),
+		PproblemID:    int(problem.ID),
+		SubmissionID:  int(submission.ID),
+		CallbackToken: submission.Token,
+	}
+	jsonData, err := json.Marshal(run)
+	if err != nil {
+		fmt.Println("Error marshalling JSON:", err)
+		return
+	}
+
+	// dynamic code runner
+	resp, err := http.Post("http://localhost:2/run", "application/json", bytes.NewBuffer(jsonData))
+	if err != nil {
+		fmt.Println("Error sending request:", err)
+		return
+	}
+	defer resp.Body.Close()
+
+	var responseBody map[string]interface{}
+	if err := json.NewDecoder(resp.Body).Decode(&responseBody); err != nil {
+		submission.Status = "Compilation failed"
+		db.Save(&submission)
+		return
+	}
+
 }

@@ -15,7 +15,12 @@ func StartListening(port int) {
 	htmlEngine := html.New("static/views/", ".html")
 	htmlEngine.AddFunc("add", Add)
 	htmlEngine.AddFunc("sub", Sub)
+	htmlEngine.AddFunc("mul", Mul)
+	htmlEngine.AddFunc("mod", Mod)
+
 	htmlEngine.AddFunc("div", Div)
+	htmlEngine.AddFunc("seq", Seq)
+
 	htmlEngine.AddFunc("timeAgo", TimeAgo)
 
 	htmlEngine.AddFunc("truncate", Truncate)
@@ -55,6 +60,8 @@ func StartListening(port int) {
 	app.Post("/problemset/:id", isAuthenticated, handleSubmitProblemView)
 
 	app.Get("/problemset/:id/:command", isAuthenticated, handlePublishProblemView) // command is publish and unpublish
+
+	app.Post("/code/callback", runCodeCallbackView)
 
 	log.Fatal(app.Listen(fmt.Sprintf(":%d", port)))
 

@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/gofiber/fiber/v2"
+	"github.com/sajjad-MoBe/CloudiJudge/judge/src/internal/code_runner"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -98,6 +99,9 @@ func handleSignupView(c *fiber.Ctx) error {
 
 	} else if hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost); err != nil {
 		errorMsg = "Use another password."
+
+	} else if !isValidEmail(email) {
+		errorMsg = "The entred email is not valid."
 
 	} else if result := db.Where("email = ?", email).First(&user); result.Error == nil {
 		errorMsg = "The entered email is already registered. Please log in."
@@ -287,9 +291,12 @@ func addProblemView(c *fiber.Ctx) error {
 
 func handleAddProblemView(c *fiber.Ctx) error {
 	var errorMsg string = ""
-
+	var problem Problem
 	if len(c.FormValue("title")) < 5 || len(c.FormValue("title")) > 50 {
 		errorMsg = "طول عنوان وارد شده باید بین 5 الی 50 کاراکتر باشد."
+
+	} else if result := db.Where("title = ?", c.FormValue("title")).First(&problem); result.Error == nil {
+		errorMsg = "The selected title is repetitive."
 
 	} else if len(c.FormValue("statement")) < 100 || len(c.FormValue("statement")) > 5000 {
 		errorMsg = "طول توضیحات وارد شده باید بین 100 الی 5000 کاراکتر باشد."
@@ -297,16 +304,16 @@ func handleAddProblemView(c *fiber.Ctx) error {
 	} else if parseInt(c.FormValue("time_limit")) <= 0 {
 		errorMsg = "محدودیت زمانی باید یک عدد مثبت باشد."
 
-	} else if parseFloat32(c.FormValue("memory_limit")) <= 0 {
+	} else if parseInt(c.FormValue("memory_limit")) <= 0 {
 		errorMsg = "محدودیت حافظه باید یک عدد مثبت باشد."
 
 	} else {
 
-		problem := Problem{
+		problem = Problem{
 			Title:       c.FormValue("title"),
 			Statement:   c.FormValue("statement"),
 			TimeLimit:   parseInt(c.FormValue("time_limit")),
-			MemoryLimit: parseFloat32(c.FormValue("memory_limit")),
+			MemoryLimit: parseInt(c.FormValue("memory_limit")),
 			OwnerID:     c.Locals("user_id").(uint),
 		}
 
@@ -420,8 +427,11 @@ func handleEditProblemView(c *fiber.Ctx) error {
 	} else if parseInt(c.FormValue("time_limit")) <= 0 {
 		errorMsg = "محدودیت زمانی باید یک عدد مثبت باشد."
 
-	} else if parseFloat32(c.FormValue("memory_limit")) <= 0 {
-		errorMsg = "محدودیت حافظه باید یک عدد مثبت باشد."
+	} else if parseInt(c.FormValue("memory_limit")) <= 0 {
+		errorMsg = "محدودیت حافظه باید یک عدد مثبت کمتر از هزار باشد."
+
+	} else if parseInt(c.FormValue("memory_limit")) >= 1000 {
+		errorMsg = "محدودیت حافظه باید یک عدد مثبت کمتر از هزار باشد."
 
 	} else {
 
@@ -447,7 +457,7 @@ func handleEditProblemView(c *fiber.Ctx) error {
 			problem.Title = c.FormValue("title")
 			problem.Statement = c.FormValue("statement")
 			problem.TimeLimit = parseInt(c.FormValue("time_limit"))
-			problem.MemoryLimit = parseFloat32(c.FormValue("memory_limit"))
+			problem.MemoryLimit = parseInt(c.FormValue("memory_limit"))
 			problem.IsPublished = false
 			db.Save(&problem)
 			return c.Redirect(fmt.Sprintf("/problemset/%d", problem.ID))
@@ -619,6 +629,7 @@ func handleSubmitProblemView(c *fiber.Ctx) error {
 
 		} else {
 			// send to code runner
+			sendCodeToRun(submission, problem)
 			return c.Redirect(fmt.Sprintf("/user/%d/submissions", user.ID))
 		}
 	}
@@ -675,7 +686,6 @@ func submissionsView(c *fiber.Ctx) error {
 		Offset(offset).Limit(limit).
 		Order("created_at DESC").
 		Preload("Problem").
-		Preload("Owner").
 		Find(&submissions).Error
 
 	if err != nil {
@@ -686,8 +696,8 @@ func submissionsView(c *fiber.Ctx) error {
 
 	return render(c, "show_submissions", fiber.Map{
 		"Submissions": submissions,
-		"User":        thisUser,
-		"Total":       total,
+		"ProfileUser": targetUser,
+		"Total":       int(total),
 		"Limit":       limit,
 		"Offset":      offset,
 		"Pages":       (int(total) + limit - 1) / limit, // Total pages
@@ -727,4 +737,26 @@ func downloadSubmissionFiles(c *fiber.Ctx) error {
 	}
 
 	return c.Download(filePath, "main.go")
+}
+
+func runCodeCallbackView(c *fiber.Ctx) error {
+	var data code_runner.ResultData
+
+	if err := c.BodyParser(&data); err != nil {
+		return c.Status(fiber.StatusBadRequest).SendString("")
+	}
+	var submission Submission
+	if err := db.Where("token = ?", data.CallbackToken).Preload("Owner").First(&submission).Error; err != nil {
+		return c.Status(fiber.StatusBadRequest).SendString("")
+	}
+	submission.Status = data.Status
+	if data.Status == "Accepted" {
+		user := submission.Owner
+		user.SuccessAttemps += 1
+		db.Save(&user)
+	}
+	db.Save(&submission)
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{
+		"ok": true,
+	})
 }

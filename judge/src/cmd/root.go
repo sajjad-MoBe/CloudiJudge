@@ -17,7 +17,11 @@ func ExecuteServer() {
 }
 
 func init() {
-	rootCmd.PersistentFlags().Int("listen", 80, "Application will be listening on this port")
-	rootCmd.AddCommand(serveCmd, codeRunnerCmd)
+	serveCmd.PersistentFlags().Int("listen", 80, "Application will be listening on this port")
+	codeRunnerCmd.PersistentFlags().Int("listen", 2, "Application will be listening on this port")
+	createAdminCmd.PersistentFlags().String("email", "-", "Admin will be created with this email")
+	loadTestCmd.PersistentFlags().Bool("erase", false, "If true, all test data will be deleted")
+
+	rootCmd.AddCommand(serveCmd, codeRunnerCmd, createAdminCmd, loadTestCmd)
 
 }

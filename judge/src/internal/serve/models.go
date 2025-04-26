@@ -13,28 +13,30 @@ type User struct {
 	Problems         []Problem `gorm:"foreignKey:OwnerID" json:"problems"`
 	IsAdmin          bool      `gorm:"default:false" json:"isAdmin"`
 	AdminCreatedByID uint
-	SolveAttemps     int `gorm:"default:0" json:"solve_attemps"`
-	SuccessAttemps   int `gorm:"default:0" json:"success_attemps"`
+	SolveAttemps     int  `gorm:"default:0" json:"solve_attemps"`
+	SuccessAttemps   int  `gorm:"default:0" json:"success_attemps"`
+	IsTest           bool `gorm:"default:false" json:"is_test"`
 }
 
 type Problem struct {
 	gorm.Model
-	Title       string     `gorm:"type:varchar(50)" json:"title"`
+	Title       string     `gorm:"type:varchar(50);unique" json:"title"`
 	Statement   string     `gorm:"type:text" json:"statement"`
 	IsPublished bool       `gorm:"default:false" json:"is_published"`
 	PublishedAt *time.Time `gorm:"default:null" json:"published_at"`
 	TimeLimit   int        `gorm:"default:0" json:"time_limit"`   // in milliseconds
-	MemoryLimit float32    `gorm:"default:0" json:"memory_limit"` // in mb
-	OwnerID     uint       `json:"user_id"`
+	MemoryLimit int        `gorm:"default:0" json:"memory_limit"` // in mb
+	OwnerID     uint       `gorm:"constraint:OnDelete:CASCADE;" json:"user_id"`
 	Owner       User       `gorm:"foreignKey:OwnerID"`
+	IsTest      bool       `gorm:"default:false" json:"is_test"`
 }
 
 type Submission struct {
 	gorm.Model
 	Status    string  `gorm:"default:waiting" json:"status"`
 	Token     string  `gorm:"type:text" json:"token"`
-	OwnerID   uint    `json:"user_id"`
+	OwnerID   uint    `gorm:"constraint:OnDelete:CASCADE;" json:"user_id"`
 	Owner     User    `gorm:"foreignKey:OwnerID"`
-	ProblemID uint    `json:"problem_id"`
+	ProblemID uint    `gorm:"constraint:OnDelete:CASCADE;" json:"problem_id"`
 	Problem   Problem `gorm:"foreignKey:ProblemID"`
 }

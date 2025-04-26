@@ -4,7 +4,9 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"time"
 
+	"golang.org/x/crypto/bcrypt"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
@@ -13,8 +15,8 @@ var db *gorm.DB
 
 func connectDatabase() {
 	dsn := fmt.Sprintf(
-		"host=localhost user=%s password=%s dbname=%s port=5432 sslmode=disable TimeZone=Asia/Tehran",
-		os.Getenv("POSTGRES_USER"), os.Getenv("POSTGRES_PASSWORD"), os.Getenv("POSTGRES_DB"),
+		"host=%s user=%s password=%s dbname=%s port=5432 sslmode=disable TimeZone=Asia/Tehran",
+		os.Getenv("POSTGRES_HOST"), os.Getenv("POSTGRES_USER"), os.Getenv("POSTGRES_PASSWORD"), os.Getenv("POSTGRES_DB"),
 	)
 
 	var err error
@@ -28,6 +30,48 @@ func connectDatabase() {
 		log.Fatalf("Failed to migrate database: %v", err)
 		os.Exit(1)
 	}
+	minutesAgo := time.Now().Add(-60 * time.Minute)
+	db.Model(&Submission{}).
+		Where("updated_at < ? AND status = ?", minutesAgo, "waiting").
+		Update("status", "Compilation failed")
 
-	log.Println("Database connected and migrated")
+	var submissions []Submission
+	err = db.Model(&Submission{}).
+		Where("updated_at > ? AND status = ?", minutesAgo, "waiting").
+		Preload("Problem").
+		Find(&submissions).Error
+
+	if err == nil {
+		for _, submission := range submissions {
+			sendCodeToRun(submission, submission.Problem)
+		}
+	}
+
+	// log.Println("Database connected and migrated")
+}
+
+func CreateAdmin(email string) {
+	connectDatabase()
+	var user User
+	if result := db.Where("email = ?", email).First(&user); result.Error == nil {
+		user.IsAdmin = true
+		db.Save(&user)
+		fmt.Println("Admin was created, use its old password.")
+		return
+	} else {
+		password := GenerateRandomToken(8)
+		hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
+		if err != nil {
+			fmt.Println("Admin user was not created.")
+			return
+		}
+		user = User{
+			Email:    email,
+			Password: string(hashedPassword),
+			IsAdmin:  true,
+		}
+		db.Create(&user)
+		db.Commit()
+		fmt.Println("admin was created, password:", password)
+	}
 }
