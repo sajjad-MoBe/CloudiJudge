@@ -291,9 +291,12 @@ func addProblemView(c *fiber.Ctx) error {
 
 func handleAddProblemView(c *fiber.Ctx) error {
 	var errorMsg string = ""
-
+	var problem Problem
 	if len(c.FormValue("title")) < 5 || len(c.FormValue("title")) > 50 {
 		errorMsg = "طول عنوان وارد شده باید بین 5 الی 50 کاراکتر باشد."
+
+	} else if result := db.Where("title = ?", c.FormValue("title")).First(&problem); result.Error == nil {
+		errorMsg = "The selected title is repetitive."
 
 	} else if len(c.FormValue("statement")) < 100 || len(c.FormValue("statement")) > 5000 {
 		errorMsg = "طول توضیحات وارد شده باید بین 100 الی 5000 کاراکتر باشد."
@@ -306,7 +309,7 @@ func handleAddProblemView(c *fiber.Ctx) error {
 
 	} else {
 
-		problem := Problem{
+		problem = Problem{
 			Title:       c.FormValue("title"),
 			Statement:   c.FormValue("statement"),
 			TimeLimit:   parseInt(c.FormValue("time_limit")),
