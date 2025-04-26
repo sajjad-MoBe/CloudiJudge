@@ -13,8 +13,9 @@ type User struct {
 	Problems         []Problem `gorm:"foreignKey:OwnerID" json:"problems"`
 	IsAdmin          bool      `gorm:"default:false" json:"isAdmin"`
 	AdminCreatedByID uint
-	SolveAttemps     int `gorm:"default:0" json:"solve_attemps"`
-	SuccessAttemps   int `gorm:"default:0" json:"success_attemps"`
+	SolveAttemps     int  `gorm:"default:0" json:"solve_attemps"`
+	SuccessAttemps   int  `gorm:"default:0" json:"success_attemps"`
+	IsTest           bool `gorm:"default:false" json:"is_test"`
 }
 
 type Problem struct {
@@ -27,6 +28,7 @@ type Problem struct {
 	MemoryLimit int        `gorm:"default:0" json:"memory_limit"` // in mb
 	OwnerID     uint       `json:"user_id"`
 	Owner       User       `gorm:"foreignKey:OwnerID"`
+	IsTest      bool       `gorm:"default:false" json:"is_test"`
 }
 
 type Submission struct {
