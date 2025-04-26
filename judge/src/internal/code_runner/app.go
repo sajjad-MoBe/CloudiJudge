@@ -1,18 +1,20 @@
 package code_runner
 
 import (
+	"fmt"
 	"log"
 
 	"github.com/gofiber/fiber/v2"
 )
 
-func StartListening(port int) {
+var queueManager *QueueManager
 
+func StartListening(port int) {
+	queueManager = NewQueueManager(20)
 	app := fiber.New(fiber.Config{})
-	// Landing
+
 	app.Get("/run", runCodeView)
 
-	// log.Fatal(app.Listen(fmt.Sprintf(":%d", port)))
-	log.Fatal(runDockerProject())
+	log.Fatal(app.Listen(fmt.Sprintf(":%d", port)))
 
 }

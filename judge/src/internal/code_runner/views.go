@@ -1,18 +1,17 @@
 package code_runner
 
 import (
-	"log"
-
 	"github.com/gofiber/fiber/v2"
 )
 
 func runCodeView(c *fiber.Ctx) error {
-	go func() {
-		// Run the Docker container
-		err := runDockerProject()
-		if err != nil {
-			log.Printf("Error running Docker project: %v", err)
-		}
-	}()
+	var data Run
+
+	if err := c.BodyParser(&data); err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"error": "Invalid JSON",
+		})
+	}
+	queueManager.Enqueue(data)
 	return c.SendString("Docker project started!")
 }
