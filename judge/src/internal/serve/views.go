@@ -5,6 +5,7 @@ import (
 	"os"
 	"path/filepath"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/gofiber/fiber/v2"
@@ -99,6 +100,9 @@ func handleSignupView(c *fiber.Ctx) error {
 
 	} else if hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost); err != nil {
 		errorMsg = "Use another password."
+
+	} else if strings.HasPrefix(email, "test") {
+		errorMsg = "email can't be started with 'test'"
 
 	} else if !isValidEmail(email) {
 		errorMsg = "The entred email is not valid."
@@ -292,7 +296,10 @@ func addProblemView(c *fiber.Ctx) error {
 func handleAddProblemView(c *fiber.Ctx) error {
 	var errorMsg string = ""
 
-	if len(c.FormValue("title")) < 5 || len(c.FormValue("title")) > 50 {
+	if strings.HasPrefix(c.FormValue("title"), "test") {
+		errorMsg = "title can't be started with 'test'"
+
+	} else if len(c.FormValue("title")) < 5 || len(c.FormValue("title")) > 50 {
 		errorMsg = "طول عنوان وارد شده باید بین 5 الی 50 کاراکتر باشد."
 
 	} else if len(c.FormValue("statement")) < 100 || len(c.FormValue("statement")) > 5000 {
