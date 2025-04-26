@@ -31,8 +31,20 @@ func connectDatabase() {
 	}
 	tenMinutesAgo := time.Now().Add(-10 * time.Minute)
 	db.Model(&Submission{}).
-		Where("updated_at < ? AND status == ?", tenMinutesAgo, "waiting").
+		Where("updated_at < ? AND status = ?", tenMinutesAgo, "waiting").
 		Update("status", "Compilation failed")
+
+	var submissions []Submission
+	err = db.Model(&Submission{}).
+		Where("updated_at > ? AND status = ?", tenMinutesAgo, "waiting").
+		Preload("Problem").
+		Find(&submissions).Error
+
+	if err == nil {
+		for _, submission := range submissions {
+			sendCodeToRun(submission, submission.Problem)
+		}
+	}
 
 	log.Println("Database connected and migrated")
 }
