@@ -24,7 +24,7 @@ type ResultData struct {
 
 func runCodeInsideContainer(run Run) string {
 	timeLimit := fmt.Sprintf("%.3f", float64(run.TimeLimitMs)/float64(1000))
-	memoryLimitMb := fmt.Sprintf("%d", run.MemoryLimitMb)
+	memoryLimitMb := fmt.Sprintf("%d", run.MemoryLimitMb+5) //5mb for container
 
 	ctx := context.Background()
 	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
