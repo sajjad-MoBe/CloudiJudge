@@ -17,8 +17,8 @@ func initSessionStore() {
 		session.Config{
 			Storage: postgres.New(postgres.Config{
 				ConnectionURI: fmt.Sprintf(
-					"postgres://%s:%s@localhost:5432/%s?sslmode=disable",
-					os.Getenv("POSTGRES_USER"), os.Getenv("POSTGRES_PASSWORD"), os.Getenv("POSTGRES_DB"),
+					"postgres://%s:%s@%s:5432/%s?sslmode=disable",
+					os.Getenv("POSTGRES_USER"), os.Getenv("POSTGRES_PASSWORD"), os.Getenv("POSTGRES_HOST"), os.Getenv("POSTGRES_DB"),
 				),
 				Table:      "sessions",
 				Reset:      false,

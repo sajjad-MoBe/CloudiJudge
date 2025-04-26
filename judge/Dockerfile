@@ -8,6 +8,9 @@ RUN chmod +x /usr/local/bin/serve
 COPY code-runner.sh /usr/local/bin/code-runner
 RUN chmod +x /usr/local/bin/code-runner
 
+COPY create-admin.sh /usr/local/bin/create-admin
+RUN chmod +x /usr/local/bin/create-admin
+
 
 ADD ./src /src
 WORKDIR /src
