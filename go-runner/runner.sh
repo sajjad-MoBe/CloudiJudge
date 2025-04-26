@@ -22,7 +22,7 @@ fi
 
 ulimit -v $((MEM_LIMIT_MB * 1024 * 1024))
 
-timeout -s KILL "$TIME_LIMIT_S" "$TEMP_DIR/code" < "$TEMP_DIR/input.txt" > "$TEMP_DIR/actual_output.txt" 2>/dev/null
+timeout -s KILL "$TIME_LIMIT_S" "$TEMP_DIR/code" < "$TEMP_DIR/input.txt" > "$TEMP_DIR/actual_output.txt" 2> /dev/null
 EXIT_CODE=$?
 if [ $EXIT_CODE -eq 137 ]; then
   echo "Time limit exceeded"
