@@ -6,6 +6,7 @@ import (
 
 type Run struct {
 	TimeLimitMs   int    `json:"time_limit"`
+	MemoryLimitMb int    `json:"memory_limit"`
 	PproblemID    int    `json:"problem_id"`
 	SubmissionID  int    `json:"submission_id"`
 	CallbackToken string `json:"calback_token"`
@@ -33,7 +34,7 @@ func (qm *QueueManager) startWorkers() {
 		go func(r Run) {
 			defer qm.wg.Done()
 			defer func() { <-qm.semaphore }()
-			sendRunCallBack(runCodeInsideContainer(r.TimeLimitMs, r.PproblemID, r.SubmissionID), r)
+			sendRunCallBack(runCodeInsideContainer(r), r)
 		}(task)
 	}
 }

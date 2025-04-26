@@ -298,7 +298,7 @@ func handleAddProblemView(c *fiber.Ctx) error {
 	} else if parseInt(c.FormValue("time_limit")) <= 0 {
 		errorMsg = "محدودیت زمانی باید یک عدد مثبت باشد."
 
-	} else if parseFloat32(c.FormValue("memory_limit")) <= 0 {
+	} else if parseInt(c.FormValue("memory_limit")) <= 0 {
 		errorMsg = "محدودیت حافظه باید یک عدد مثبت باشد."
 
 	} else {
@@ -307,7 +307,7 @@ func handleAddProblemView(c *fiber.Ctx) error {
 			Title:       c.FormValue("title"),
 			Statement:   c.FormValue("statement"),
 			TimeLimit:   parseInt(c.FormValue("time_limit")),
-			MemoryLimit: parseFloat32(c.FormValue("memory_limit")),
+			MemoryLimit: parseInt(c.FormValue("memory_limit")),
 			OwnerID:     c.Locals("user_id").(uint),
 		}
 
@@ -421,7 +421,7 @@ func handleEditProblemView(c *fiber.Ctx) error {
 	} else if parseInt(c.FormValue("time_limit")) <= 0 {
 		errorMsg = "محدودیت زمانی باید یک عدد مثبت باشد."
 
-	} else if parseFloat32(c.FormValue("memory_limit")) <= 0 {
+	} else if parseInt(c.FormValue("memory_limit")) <= 0 {
 		errorMsg = "محدودیت حافظه باید یک عدد مثبت باشد."
 
 	} else {
@@ -448,7 +448,7 @@ func handleEditProblemView(c *fiber.Ctx) error {
 			problem.Title = c.FormValue("title")
 			problem.Statement = c.FormValue("statement")
 			problem.TimeLimit = parseInt(c.FormValue("time_limit"))
-			problem.MemoryLimit = parseFloat32(c.FormValue("memory_limit"))
+			problem.MemoryLimit = parseInt(c.FormValue("memory_limit"))
 			problem.IsPublished = false
 			db.Save(&problem)
 			return c.Redirect(fmt.Sprintf("/problemset/%d", problem.ID))

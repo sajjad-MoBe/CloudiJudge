@@ -22,8 +22,8 @@ type ResultData struct {
 	Status        string `json:"Status"`
 }
 
-func runCodeInsideContainer(timeLimitMs, problemID, submissionID int) string {
-	timeLimit := fmt.Sprintf("%.2f", float64(timeLimitMs)/float64(1000))
+func runCodeInsideContainer(run Run) string {
+	timeLimit := fmt.Sprintf("%.2f", float64(run.TimeLimitMs)/float64(1000))
 
 	ctx := context.Background()
 	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
@@ -33,7 +33,7 @@ func runCodeInsideContainer(timeLimitMs, problemID, submissionID int) string {
 	}
 	defer cli.Close()
 
-	problemDir := filepath.Join(os.Getenv("PROBLEM_UPLOAD_FOLDER"), fmt.Sprintf("%d", problemID))
+	problemDir := filepath.Join(os.Getenv("PROBLEM_UPLOAD_FOLDER"), fmt.Sprintf("%d", run.PproblemID))
 
 	config := &container.Config{
 		Image: "go-code-runner",
@@ -44,7 +44,7 @@ func runCodeInsideContainer(timeLimitMs, problemID, submissionID int) string {
 		Mounts: []mount.Mount{
 			{
 				Type:     mount.TypeBind,
-				Source:   filepath.Join(problemDir, fmt.Sprintf("%d.go", submissionID)),
+				Source:   filepath.Join(problemDir, fmt.Sprintf("%d.go", run.SubmissionID)),
 				Target:   "/mnt/problem/code.go",
 				ReadOnly: true,
 			},
@@ -57,7 +57,7 @@ func runCodeInsideContainer(timeLimitMs, problemID, submissionID int) string {
 		},
 		Resources: container.Resources{
 			CPUCount: 1,
-			Memory:   256 * 1024 * 1024,
+			Memory:   int64(run.MemoryLimitMb+10) * 1024 * 1024, // 10mb for container
 			NanoCPUs: 1_000_000_000,
 			Ulimits:  []*units.Ulimit{{Name: "nofile", Soft: 1024, Hard: 1024}},
 		},

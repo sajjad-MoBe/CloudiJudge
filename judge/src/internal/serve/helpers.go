@@ -42,15 +42,6 @@ func isSecurePassword(password string) bool {
 	return hasLetter && hasNumber
 }
 
-func parseFloat32(value string) float32 {
-	if value == "" {
-		return 0
-	}
-	var result float32
-	fmt.Sscanf(value, "%f", &result)
-	return result
-}
-
 func parseInt(value string) int {
 	ress, err := strconv.Atoi(value)
 	if err != nil {
@@ -129,6 +120,7 @@ func TimeAgo(t time.Time) string {
 func sendCodeToRun(submission Submission, problem Problem) {
 	run := code_runner.Run{
 		TimeLimitMs:   problem.TimeLimit,
+		MemoryLimitMb: int(problem.MemoryLimit),
 		PproblemID:    int(problem.ID),
 		SubmissionID:  int(submission.ID),
 		CallbackToken: submission.Token,

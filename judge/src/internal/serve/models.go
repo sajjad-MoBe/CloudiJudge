@@ -24,7 +24,7 @@ type Problem struct {
 	IsPublished bool       `gorm:"default:false" json:"is_published"`
 	PublishedAt *time.Time `gorm:"default:null" json:"published_at"`
 	TimeLimit   int        `gorm:"default:0" json:"time_limit"`   // in milliseconds
-	MemoryLimit float32    `gorm:"default:0" json:"memory_limit"` // in mb
+	MemoryLimit int        `gorm:"default:0" json:"memory_limit"` // in mb
 	OwnerID     uint       `json:"user_id"`
 	Owner       User       `gorm:"foreignKey:OwnerID"`
 }
