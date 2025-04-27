@@ -199,6 +199,7 @@ func sendCodeToRun(submission Submission, problem Problem) {
 
 	var responseBody map[string]interface{}
 	if err := json.NewDecoder(resp.Body).Decode(&responseBody); err != nil {
+		fmt.Println("Error read response request", err)
 		submission.Status = "Compilation failed"
 		db.Save(&submission)
 		return

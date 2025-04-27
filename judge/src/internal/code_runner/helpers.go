@@ -120,13 +120,15 @@ func runCodeInsideContainer(run Run) string {
 			return "Compilation failed"
 		}
 	}
+
 	if strings.Contains(compileOutput, "failed") {
+		fmt.Println("Compilation failed")
 		return "Compilation failed"
 	}
 
 	_, err = cli.ContainerUpdate(ctx, resp.ID, container.UpdateConfig{
 		Resources: container.Resources{
-			Memory: int64(run.MemoryLimitMb+2) * 1024 * 1024, // 2 mb for container
+			Memory: int64(run.MemoryLimitMb+6) * 1024 * 1024, // 6 mb for container
 		},
 	})
 	if err != nil {
@@ -190,8 +192,6 @@ func runCodeInsideContainer(run Run) string {
 		return "Time limit exceeded"
 	} else if strings.Contains(output[:charLimit], "Memory limit exceeded") {
 		return "Memory limit exceeded"
-	} else if strings.Contains(output[:charLimit], "Compilation failed") {
-		return "Compilation failed"
 	} else if strings.Contains(output[:charLimit], "Runtime error") {
 		return "Runtime error"
 	}
