@@ -5,6 +5,7 @@ import (
 	"os"
 	"path/filepath"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/gofiber/fiber/v2"
@@ -33,19 +34,15 @@ func error_403(c *fiber.Ctx) error {
 }
 
 func loginView(c *fiber.Ctx) error {
-	var email string
-	var message string
 
 	return render(c, "login", fiber.Map{
 		"PageTitle": "CloudiJudge | login",
-		"Message":   message,
-		"Email":     email,
 	})
 }
 
 func handleLoginView(c *fiber.Ctx) error {
 
-	email := c.FormValue("email")
+	email := strings.ToLower(c.FormValue("email"))
 	password := c.FormValue("password")
 
 	var errorMsg string
@@ -88,7 +85,7 @@ func handleSignupView(c *fiber.Ctx) error {
 	var errorMsg string
 	var user User
 	// Parse form data
-	email := c.FormValue("email")
+	email := strings.ToLower(c.FormValue("email"))
 	password := c.FormValue("password")
 	confirm_password := c.FormValue("confirm-password")
 	if password != confirm_password {
