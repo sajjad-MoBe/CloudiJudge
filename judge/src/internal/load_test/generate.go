@@ -3,8 +3,6 @@ package load_test
 import (
 	"fmt"
 	"math/rand"
-	"os"
-	"path/filepath"
 	"strings"
 	"time"
 
@@ -29,7 +27,7 @@ func GenerateAndFill() {
 		db.Create(&user)
 	}
 	fmt.Println("test users were generated")
-	for i := 0; i < 1000_000; i++ {
+	for i := 0; i < 500_000; i++ {
 		fmt.Println("adding problem", i+1)
 		randomIndex := rand.Intn(100_000) + 1
 		isPublished := randomIndex%2 == 0
@@ -46,36 +44,37 @@ func GenerateAndFill() {
 			IsTest:      true,
 		}
 		db.Create(&problem)
-		problemDir := filepath.Join(os.Getenv("PROBLEM_UPLOAD_FOLDER"), fmt.Sprintf("%d", problem.ID))
-		if err := os.MkdirAll(problemDir, os.ModePerm); err != nil {
-			db.Delete(&problem)
-			fmt.Println("failed to generate test problem")
-			return
-		}
-		file, err := os.Create(filepath.Join(problemDir, "input.txt"))
-		if err != nil {
-			fmt.Println("Error creating input file:", err)
-			return
-		}
-		_, err = file.WriteString("1\n2\n3")
-		if err != nil {
-			fmt.Println("Error writing to file:", err)
-			file.Close()
-			return
-		}
-		file.Close()
-		file, err = os.Create(filepath.Join(problemDir, "output.txt"))
-		if err != nil {
-			fmt.Println("Error creating output file:", err)
-			return
-		}
-		_, err = file.WriteString("2\n4\n6")
-		if err != nil {
-			fmt.Println("Error writing to file:", err)
-			file.Close()
-			return
-		}
-		file.Close()
+
+		// problemDir := filepath.Join(os.Getenv("PROBLEM_UPLOAD_FOLDER"), fmt.Sprintf("%d", problem.ID))
+		// if err := os.MkdirAll(problemDir, os.ModePerm); err != nil {
+		// 	db.Delete(&problem)
+		// 	fmt.Println("failed to generate test problem")
+		// 	return
+		// }
+		// file, err := os.Create(filepath.Join(problemDir, "input.txt"))
+		// if err != nil {
+		// 	fmt.Println("Error creating input file:", err)
+		// 	return
+		// }
+		// _, err = file.WriteString("1\n2\n3")
+		// if err != nil {
+		// 	fmt.Println("Error writing to file:", err)
+		// 	file.Close()
+		// 	return
+		// }
+		// file.Close()
+		// file, err = os.Create(filepath.Join(problemDir, "output.txt"))
+		// if err != nil {
+		// 	fmt.Println("Error creating output file:", err)
+		// 	return
+		// }
+		// _, err = file.WriteString("2\n4\n6")
+		// if err != nil {
+		// 	fmt.Println("Error writing to file:", err)
+		// 	file.Close()
+		// 	return
+		// }
+		// file.Close()
 	}
 	db.Commit()
 

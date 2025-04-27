@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"strings"
 	"time"
 
 	"golang.org/x/crypto/bcrypt"
@@ -59,6 +60,7 @@ func connectDatabase() {
 
 func CreateAdmin(email string) {
 	connectDatabase()
+	email = strings.ToLower(email)
 	var user User
 	if result := db.Where("email = ?", email).First(&user); result.Error == nil {
 		user.IsAdmin = true
