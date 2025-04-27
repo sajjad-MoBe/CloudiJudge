@@ -258,6 +258,7 @@ func problemsetView(c *fiber.Ctx) error {
 	total := publishedProblemsCount
 
 	err := db.Model(&Problem{}).
+		Select("id, title, statement, published_at").
 		Where("is_published = ?", true).
 		Offset(offset).Limit(limit).
 		Order("published_at DESC").

@@ -17,3 +17,4 @@ RUN chmod +x /usr/local/bin/load-test
 ADD ./src /src
 WORKDIR /src
 RUN go mod download
+RUN go build -o judge ./
