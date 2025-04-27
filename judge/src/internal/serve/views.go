@@ -257,12 +257,17 @@ func problemsetView(c *fiber.Ctx) error {
 	var problems []Problem
 	total := publishedProblemsCount
 
+	start := time.Now()
+
 	err := db.Model(&Problem{}).
 		Select("id, title, statement, published_at").
 		Where("is_published = ?", true).
 		Offset(offset).Limit(limit).
 		Order("published_at DESC").
 		Find(&problems).Error
+
+	duration := time.Since(start)
+	fmt.Printf("Time taken: %d ms\n", duration.Milliseconds())
 
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{

@@ -32,6 +32,7 @@ func connectDatabase() {
 		log.Fatalf("Failed to migrate database: %v", err)
 		os.Exit(1)
 	}
+
 	minutesAgo := time.Now().Add(-60 * time.Minute)
 	db.Model(&Submission{}).
 		Where("updated_at < ? AND status = ?", minutesAgo, "waiting").
