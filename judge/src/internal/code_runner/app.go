@@ -3,6 +3,8 @@ package code_runner
 import (
 	"fmt"
 	"log"
+	"os"
+	"strconv"
 
 	"github.com/gofiber/fiber/v2"
 )
@@ -10,7 +12,12 @@ import (
 var queueManager *QueueManager
 
 func StartListening(port int) {
-	queueManager = NewQueueManager(20)
+	maxConcurrent, err := strconv.Atoi(os.Getenv("MAX_CONCURRENT_RUNS"))
+	if err != nil {
+		fmt.Println("invalid MAX_CONCURRENT_RUNS value, use 10 as default value")
+		maxConcurrent = 10
+	}
+	queueManager = NewQueueManager(maxConcurrent)
 	app := fiber.New(fiber.Config{})
 
 	app.Post("/run", runCodeView)

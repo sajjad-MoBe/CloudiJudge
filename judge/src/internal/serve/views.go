@@ -633,7 +633,7 @@ func handleSubmitProblemView(c *fiber.Ctx) error {
 
 		} else {
 			// send to code runner
-			sendCodeToRun(submission, problem)
+			go sendCodeToRun(submission, problem)
 			return c.Redirect(fmt.Sprintf("/user/%d/submissions", user.ID))
 		}
 	}

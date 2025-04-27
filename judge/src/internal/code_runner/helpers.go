@@ -34,7 +34,8 @@ func runCodeInsideContainer(run Run) string {
 	}
 	defer cli.Close()
 
-	problemDir := filepath.Join(os.Getenv("PROBLEM_UPLOAD_FOLDER"), fmt.Sprintf("%d", run.PproblemID))
+	problemDirOnHost := filepath.Join(os.Getenv("PROBLEM_UPLOAD_FOLDER_SRC"), fmt.Sprintf("%d", run.PproblemID))
+	problemDirOnContainer := filepath.Join(os.Getenv("PROBLEM_UPLOAD_FOLDER"), fmt.Sprintf("%d", run.PproblemID))
 
 	config := &container.Config{
 		Image: "go-code-runner",
@@ -45,13 +46,13 @@ func runCodeInsideContainer(run Run) string {
 		Mounts: []mount.Mount{
 			{
 				Type:     mount.TypeBind,
-				Source:   filepath.Join(problemDir, fmt.Sprintf("%d.go", run.SubmissionID)),
+				Source:   filepath.Join(problemDirOnHost, fmt.Sprintf("%d.go", run.SubmissionID)),
 				Target:   "/mnt/problem/code.go",
 				ReadOnly: true,
 			},
 			{
 				Type:     mount.TypeBind,
-				Source:   filepath.Join(problemDir, "input.txt"),
+				Source:   filepath.Join(problemDirOnHost, "input.txt"),
 				Target:   "/mnt/problem/input.txt",
 				ReadOnly: true,
 			},
@@ -137,7 +138,7 @@ func runCodeInsideContainer(run Run) string {
 		return "Runtime error"
 	}
 
-	file, err := os.Open(filepath.Join(problemDir, "output.txt"))
+	file, err := os.Open(filepath.Join(problemDirOnContainer, "output.txt"))
 	if err != nil {
 		fmt.Println("Error opening file:", err)
 		return "Compilation failed"

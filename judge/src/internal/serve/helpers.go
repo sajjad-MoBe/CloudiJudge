@@ -6,9 +6,12 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
+	"log"
+	"net"
 	"net/http"
 	"net/mail"
 	"strconv"
+	"sync"
 	"time"
 	"unicode"
 
@@ -123,7 +126,44 @@ func TimeAgo(t time.Time) string {
 	}
 }
 
+type CodeRunner struct {
+	Address string
+	Active  bool
+}
+
+var (
+	codeRunners          []CodeRunner
+	codeRunnerMutex      sync.Mutex
+	currentCodeRunnerIdx int
+)
+
+func discoverCodeRunners() {
+	for {
+		addrs, err := net.LookupHost("code-runner")
+		if err != nil {
+			log.Printf("Error resolving code-runner service: %v", err)
+			time.Sleep(5 * time.Second)
+			continue
+		}
+
+		codeRunnerMutex.Lock()
+		codeRunners = nil
+		for _, addr := range addrs {
+			workerAddr := "http://" + addr + ":2/run"
+			codeRunners = append(codeRunners, CodeRunner{Address: workerAddr, Active: true})
+		}
+		codeRunnerMutex.Unlock()
+
+		log.Printf("Discovered code-runners: %v", addrs)
+		time.Sleep(10 * time.Second)
+	}
+}
 func sendCodeToRun(submission Submission, problem Problem) {
+	if len(codeRunners) == 0 {
+		time.Sleep(5 * time.Second)
+		go sendCodeToRun(submission, problem)
+		return
+	}
 	run := code_runner.Run{
 		TimeLimitMs:   problem.TimeLimit,
 		MemoryLimitMb: int(problem.MemoryLimit),
@@ -133,14 +173,27 @@ func sendCodeToRun(submission Submission, problem Problem) {
 	}
 	jsonData, err := json.Marshal(run)
 	if err != nil {
-		fmt.Println("Error marshalling JSON:", err)
+		log.Println("Error marshalling JSON:", err)
 		return
 	}
 
-	// dynamic code runner
-	resp, err := http.Post("http://localhost:2/run", "application/json", bytes.NewBuffer(jsonData))
+	codeRunnerMutex.Lock()
+	defer codeRunnerMutex.Unlock()
+	if len(codeRunners) == 0 {
+		log.Println("No code runner available")
+		submission.Status = "Compilation failed"
+		db.Save(&submission)
+		return
+
+	}
+
+	codeRunner := codeRunners[currentCodeRunnerIdx%len(codeRunners)]
+	currentCodeRunnerIdx = (currentCodeRunnerIdx + 1) % len(codeRunners)
+	log.Println("Run code by", codeRunner.Address)
+
+	resp, err := http.Post(codeRunner.Address, "application/json", bytes.NewBuffer(jsonData))
 	if err != nil {
-		fmt.Println("Error sending request:", err)
+		log.Println("Error sending request:", err)
 		return
 	}
 	defer resp.Body.Close()

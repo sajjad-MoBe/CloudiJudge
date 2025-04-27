@@ -11,8 +11,8 @@ RUN chmod +x /usr/local/bin/code-runner
 COPY create-admin.sh /usr/local/bin/create-admin
 RUN chmod +x /usr/local/bin/create-admin
 
-COPY load-test.sh /usr/local/bin/load-test
-RUN chmod +x /usr/local/bin/load-test
+COPY load-test-data.sh /usr/local/bin/load-test-data
+RUN chmod +x /usr/local/bin/load-test-data
 
 ADD ./src /src
 WORKDIR /src
