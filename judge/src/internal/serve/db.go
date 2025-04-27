@@ -12,6 +12,7 @@ import (
 )
 
 var db *gorm.DB
+var publishedProblemsCount int64
 
 func connectDatabase() {
 	dsn := fmt.Sprintf(
@@ -46,7 +47,13 @@ func connectDatabase() {
 			sendCodeToRun(submission, submission.Problem)
 		}
 	}
-
+	err = db.Model(&Problem{}).
+		Where("is_published = ?", true).
+		Count(&publishedProblemsCount).Error
+	if err != nil {
+		log.Fatalf("Failed to load published problems: %v", err)
+		os.Exit(1)
+	}
 	// log.Println("Database connected and migrated")
 }
 

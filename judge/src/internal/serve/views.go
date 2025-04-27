@@ -255,11 +255,10 @@ func problemsetView(c *fiber.Ctx) error {
 	}
 
 	var problems []Problem
-	var total int64
+	total := publishedProblemsCount
 
 	err := db.Model(&Problem{}).
 		Where("is_published = ?", true).
-		Count(&total).
 		Offset(offset).Limit(limit).
 		Order("published_at DESC").
 		Find(&problems).Error
@@ -566,7 +565,9 @@ func handlePublishProblemView(c *fiber.Ctx) error {
 			now := time.Now()
 			problem.PublishedAt = &now
 		}
+		publishedProblemsCount++
 	} else {
+		publishedProblemsCount--
 		problem.IsPublished = false
 	}
 	db.Save(&problem)
