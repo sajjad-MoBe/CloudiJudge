@@ -632,7 +632,8 @@ func handleSubmitProblemView(c *fiber.Ctx) error {
 			errorMsg = "خطایی در ذخیره فایل ارسالی رخ داد."
 
 		} else {
-			// send to code runner
+			user.SolveAttemps++
+			db.Save(&user)
 			go sendCodeToRun(submission, problem)
 			return c.Redirect(fmt.Sprintf("/user/%d/submissions", user.ID))
 		}
