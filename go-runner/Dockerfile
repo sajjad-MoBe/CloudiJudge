@@ -4,11 +4,15 @@ RUN apk add --no-cache bash
 
 WORKDIR /app
 
-COPY runner.sh .
+COPY builder.sh /usr/local/bin/builder
+RUN chmod +x /usr/local/bin/builder
 
-RUN chmod +x runner.sh
 
-RUN adduser -D -u 1000 appuser
-USER appuser
+COPY runner.sh /usr/local/bin/runner
+RUN chmod +x /usr/local/bin/runner
 
-ENTRYPOINT ["./runner.sh"]
+
+RUN adduser -D -u 1000 runner
+USER runner
+
+ENTRYPOINT ["builder"]

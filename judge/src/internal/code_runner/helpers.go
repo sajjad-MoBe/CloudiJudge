@@ -23,8 +23,7 @@ type ResultData struct {
 }
 
 func runCodeInsideContainer(run Run) string {
-	timeLimit := fmt.Sprintf("%.3f", float64(run.TimeLimitMs)/float64(1000))
-	memoryLimitMb := fmt.Sprintf("%d", run.MemoryLimitMb+5) //5mb for container
+	timeLimit := fmt.Sprintf("%.3f", float64(run.TimeLimitMs+5000)/float64(1000))
 
 	ctx := context.Background()
 	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
@@ -39,7 +38,10 @@ func runCodeInsideContainer(run Run) string {
 
 	config := &container.Config{
 		Image: "go-code-runner",
-		Cmd:   []string{timeLimit, memoryLimitMb},
+		Cmd:   []string{""},
+		Env: []string{
+			"TIME_LIMIT=" + timeLimit,
+		},
 	}
 
 	hostConfig := &container.HostConfig{
@@ -59,7 +61,7 @@ func runCodeInsideContainer(run Run) string {
 		},
 		Resources: container.Resources{
 			CPUCount: 1,
-			Memory:   int64(run.MemoryLimitMb+300) * 1024 * 1024, // 300mb for container
+			Memory:   int64(512) * 1024 * 1024, // for build code
 			NanoCPUs: 1_000_000_000,
 			Ulimits:  []*units.Ulimit{{Name: "nofile", Soft: 1024, Hard: 1024}},
 		},
@@ -67,7 +69,7 @@ func runCodeInsideContainer(run Run) string {
 		NetworkMode: "none", // No network
 		CapDrop:     []string{"ALL"},
 		SecurityOpt: []string{"no-new-privileges"},
-		AutoRemove:  true, // Equivalent to --rm
+		AutoRemove:  false,
 	}
 
 	resp, err := cli.ContainerCreate(ctx, config, hostConfig, nil, nil, "")
@@ -75,6 +77,7 @@ func runCodeInsideContainer(run Run) string {
 		fmt.Printf("Error creating container: %v\n", err)
 		return "Compilation failed"
 	}
+	defer cli.ContainerRemove(ctx, resp.ID, container.RemoveOptions{Force: true})
 
 	if err := cli.ContainerStart(ctx, resp.ID, container.StartOptions{}); err != nil {
 		fmt.Printf("Error starting container: %v\n", err)
@@ -92,21 +95,17 @@ func runCodeInsideContainer(run Run) string {
 	}
 	defer attachResp.Close()
 
-	isFirstLine := true
-	var output string
+	var compileOutput string
 	dScanner := bufio.NewScanner(attachResp.Reader)
 	for dScanner.Scan() {
 		line := dScanner.Text()
-		if isFirstLine {
-			isFirstLine = false
-			if len(line) > 8 {
-				line = line[8:]
-			}
+		if len(line) > 8 {
+			line = line[8:]
 		}
-		output += line
+		compileOutput += line
 	}
 	if err := dScanner.Err(); err != nil {
-		fmt.Printf("Error reading container output: %v\n", err)
+		fmt.Printf("Error reading compile container output: %v\n", err)
 		return "Compilation failed"
 	}
 
@@ -121,6 +120,65 @@ func runCodeInsideContainer(run Run) string {
 			return "Compilation failed"
 		}
 	}
+	if strings.Contains(compileOutput, "failed") {
+		return "Compilation failed"
+	}
+
+	_, err = cli.ContainerUpdate(ctx, resp.ID, container.UpdateConfig{
+		Resources: container.Resources{
+			Memory: int64(run.MemoryLimitMb+2) * 1024 * 1024, // 2 mb for container
+		},
+	})
+	if err != nil {
+		fmt.Printf("error updating container memory: %v", err)
+		return "Compilation failed"
+	}
+
+	if err := cli.ContainerStart(ctx, resp.ID, container.StartOptions{}); err != nil {
+		fmt.Printf("Error starting container: %v\n", err)
+		return "Compilation failed"
+	}
+
+	statusCh, errCh = cli.ContainerWait(ctx, resp.ID, container.WaitConditionNotRunning)
+	select {
+	case err := <-errCh:
+		fmt.Printf("Error waiting for container: %v\n", err)
+		return "Compilation failed"
+	case status := <-statusCh:
+		if status.StatusCode != 0 {
+			fmt.Println("Compilation failed", status.Error)
+			return "Compilation failed"
+		}
+	}
+	logs, err := cli.ContainerLogs(ctx, resp.ID, container.LogsOptions{
+		ShowStdout: true,
+		ShowStderr: true,
+	})
+	if err != nil {
+		fmt.Println("error reading logs for container", err)
+		return "Compilation failed"
+	}
+	defer logs.Close()
+	isFirstLine := true
+	var output string
+	dScanner = bufio.NewScanner(logs)
+	for dScanner.Scan() {
+		line := dScanner.Text()
+		if isFirstLine {
+			isFirstLine = false
+			continue // skip first line
+		}
+		if len(line) > 8 {
+			line = line[8:]
+		}
+		output += line
+	}
+
+	if err := dScanner.Err(); err != nil {
+		fmt.Println("error reading exec output", err)
+		return "Compilation failed"
+	}
+
 	charLimit := 200
 	if len(output) < charLimit {
 		charLimit = len(output)
@@ -151,6 +209,7 @@ func runCodeInsideContainer(run Run) string {
 		line := fScanner.Text()
 		main_output += line
 	}
+
 	if output == main_output {
 		return "Accepted"
 	}

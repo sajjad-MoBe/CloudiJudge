@@ -154,7 +154,6 @@ func discoverCodeRunners() {
 		}
 		codeRunnerMutex.Unlock()
 
-		log.Printf("Discovered code-runners: %v", addrs)
 		time.Sleep(10 * time.Second)
 	}
 }
