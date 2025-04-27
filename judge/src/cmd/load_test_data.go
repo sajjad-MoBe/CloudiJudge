@@ -1,13 +1,13 @@
 package cmd
 
 import (
-	"github.com/sajjad-MoBe/CloudiJudge/judge/src/internal/load_test"
+	load_test "github.com/sajjad-MoBe/CloudiJudge/judge/src/internal/load_test_data"
 
 	"github.com/spf13/cobra"
 )
 
-var loadTestCmd = &cobra.Command{
-	Use:   "load-test",
+var loadTestDataCmd = &cobra.Command{
+	Use:   "load-test-data",
 	Short: "generate test data",
 	Run: func(cmd *cobra.Command, args []string) {
 		var erase bool

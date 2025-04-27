@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"strings"
 	"time"
 
 	"golang.org/x/crypto/bcrypt"
@@ -12,6 +13,7 @@ import (
 )
 
 var db *gorm.DB
+var publishedProblemsCount int64
 
 func connectDatabase() {
 	dsn := fmt.Sprintf(
@@ -30,6 +32,7 @@ func connectDatabase() {
 		log.Fatalf("Failed to migrate database: %v", err)
 		os.Exit(1)
 	}
+
 	minutesAgo := time.Now().Add(-60 * time.Minute)
 	db.Model(&Submission{}).
 		Where("updated_at < ? AND status = ?", minutesAgo, "waiting").
@@ -46,12 +49,19 @@ func connectDatabase() {
 			sendCodeToRun(submission, submission.Problem)
 		}
 	}
-
+	err = db.Model(&Problem{}).
+		Where("is_published = ?", true).
+		Count(&publishedProblemsCount).Error
+	if err != nil {
+		log.Fatalf("Failed to load published problems: %v", err)
+		os.Exit(1)
+	}
 	// log.Println("Database connected and migrated")
 }
 
 func CreateAdmin(email string) {
 	connectDatabase()
+	email = strings.ToLower(email)
 	var user User
 	if result := db.Where("email = ?", email).First(&user); result.Error == nil {
 		user.IsAdmin = true

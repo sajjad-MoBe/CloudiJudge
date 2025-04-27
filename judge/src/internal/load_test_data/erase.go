@@ -1,4 +1,4 @@
-package load_test
+package load_test_data
 
 import (
 	"fmt"
@@ -13,7 +13,7 @@ func Erase() {
 
 	var problems []serve.Problem
 
-	if err := db.Where("is_test = ?", true).Find(&problems).Error; err != nil {
+	if err := db.Where("is_test = ? OR OR owner.is_test = ?", true, true).Find(&problems).Error; err != nil {
 		fmt.Println("Error in fetch problems", err)
 		return
 	}

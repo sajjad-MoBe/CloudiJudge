@@ -5,6 +5,7 @@ import (
 	"os"
 	"path/filepath"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/gofiber/fiber/v2"
@@ -33,19 +34,15 @@ func error_403(c *fiber.Ctx) error {
 }
 
 func loginView(c *fiber.Ctx) error {
-	var email string
-	var message string
 
 	return render(c, "login", fiber.Map{
 		"PageTitle": "CloudiJudge | login",
-		"Message":   message,
-		"Email":     email,
 	})
 }
 
 func handleLoginView(c *fiber.Ctx) error {
 
-	email := c.FormValue("email")
+	email := strings.ToLower(c.FormValue("email"))
 	password := c.FormValue("password")
 
 	var errorMsg string
@@ -88,7 +85,7 @@ func handleSignupView(c *fiber.Ctx) error {
 	var errorMsg string
 	var user User
 	// Parse form data
-	email := c.FormValue("email")
+	email := strings.ToLower(c.FormValue("email"))
 	password := c.FormValue("password")
 	confirm_password := c.FormValue("confirm-password")
 	if password != confirm_password {
@@ -258,14 +255,19 @@ func problemsetView(c *fiber.Ctx) error {
 	}
 
 	var problems []Problem
-	var total int64
+	total := publishedProblemsCount
+
+	start := time.Now()
 
 	err := db.Model(&Problem{}).
+		Select("id, title, statement, published_at").
 		Where("is_published = ?", true).
-		Count(&total).
 		Offset(offset).Limit(limit).
 		Order("published_at DESC").
 		Find(&problems).Error
+
+	duration := time.Since(start)
+	fmt.Printf("Time taken: %d ms\n", duration.Milliseconds())
 
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
@@ -569,7 +571,9 @@ func handlePublishProblemView(c *fiber.Ctx) error {
 			now := time.Now()
 			problem.PublishedAt = &now
 		}
+		publishedProblemsCount++
 	} else {
+		publishedProblemsCount--
 		problem.IsPublished = false
 	}
 	db.Save(&problem)
@@ -628,8 +632,9 @@ func handleSubmitProblemView(c *fiber.Ctx) error {
 			errorMsg = "خطایی در ذخیره فایل ارسالی رخ داد."
 
 		} else {
-			// send to code runner
-			sendCodeToRun(submission, problem)
+			user.SolveAttemps++
+			db.Save(&user)
+			go sendCodeToRun(submission, problem)
 			return c.Redirect(fmt.Sprintf("/user/%d/submissions", user.ID))
 		}
 	}

@@ -1,4 +1,4 @@
-package load_test
+package load_test_data
 
 import (
 	"fmt"
@@ -29,7 +29,7 @@ func GenerateAndFill() {
 		db.Create(&user)
 	}
 	fmt.Println("test users were generated")
-	for i := 0; i < 1000_000; i++ {
+	for i := 0; i < 500_000; i++ {
 		fmt.Println("adding problem", i+1)
 		randomIndex := rand.Intn(100_000) + 1
 		isPublished := randomIndex%2 == 0
@@ -46,6 +46,7 @@ func GenerateAndFill() {
 			IsTest:      true,
 		}
 		db.Create(&problem)
+
 		problemDir := filepath.Join(os.Getenv("PROBLEM_UPLOAD_FOLDER"), fmt.Sprintf("%d", problem.ID))
 		if err := os.MkdirAll(problemDir, os.ModePerm); err != nil {
 			db.Delete(&problem)

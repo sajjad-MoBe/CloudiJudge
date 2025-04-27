@@ -12,6 +12,8 @@ func StartListening(port int) {
 	connectDatabase()
 	initSessionStore()
 
+	go discoverCodeRunners()
+
 	htmlEngine := html.New("static/views/", ".html")
 	htmlEngine.AddFunc("add", Add)
 	htmlEngine.AddFunc("sub", Sub)

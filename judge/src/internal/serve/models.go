@@ -20,9 +20,9 @@ type User struct {
 
 type Problem struct {
 	gorm.Model
-	Title       string     `gorm:"type:varchar(50);unique" json:"title"`
+	Title       string     `gorm:"type:varchar(50);unique;index" json:"title"`
 	Statement   string     `gorm:"type:text" json:"statement"`
-	IsPublished bool       `gorm:"default:false" json:"is_published"`
+	IsPublished bool       `gorm:"default:false;index" json:"is_published"`
 	PublishedAt *time.Time `gorm:"default:null" json:"published_at"`
 	TimeLimit   int        `gorm:"default:0" json:"time_limit"`   // in milliseconds
 	MemoryLimit int        `gorm:"default:0" json:"memory_limit"` // in mb
