@@ -34,10 +34,10 @@ This project aims to create an online judging system similar to platforms like Q
 
 ### Submissions
 - Users can submit Golang code for questions.
-- Submission results are initially marked as "uncategorized" and processed by a judging service afterward.
+- Submission results are initially marked as "waiting" and processed by a judging service afterward.
 - Possible outcomes include:
-  - Correct (OK)
-  - Compile Error
+  - Accepted (OK)
+  - Compilatin faild
   - Wrong Answer
   - Memory Limit Exceeded
   - Time Limit Exceeded
