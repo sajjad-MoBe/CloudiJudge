@@ -26,6 +26,7 @@ func StartListening(port int) {
 	htmlEngine.AddFunc("timeAgo", TimeAgo)
 
 	htmlEngine.AddFunc("truncate", Truncate)
+	htmlEngine.AddFunc("breaklines", Breaklines)
 
 	app := fiber.New(fiber.Config{
 		Views: htmlEngine,

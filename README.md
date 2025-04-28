@@ -119,7 +119,7 @@ Follow these steps to set up and run the **CloudiJudge** project:
 
 	-  `PORT`: Application port
 
-	-  `POSTGRES_HOST`: Your PostgreSQL service name
+	-  `POSTGRES_HOST`: Your PostgreSQL service name(default is `db` if you changed it on docker-comppose.yml you should also change this variable)
 
 	-  `POSTGRES_USER`: Your PostgreSQL username
 
@@ -169,3 +169,12 @@ Follow these steps to set up and run the **CloudiJudge** project:
 	Once the containers are up, the application should be running and accessible as configured.
 
 
+## Contributors
+
+- Sajjad: Implemented the backend part of the website.
+  - Email: [sajjad.mohammadbeigi@gmail.com](mailto:sajjad.mohammadbeigi@gmail.com)
+  - GitHub: [@sajjad-MoBe](https://github.com/sajjad-MoBe)
+
+- Mohammad: Implemented the frontend part of the website.
+  - Email: [mohammadmohammadbeigi1381@gmail.com](mailto:mohammadmohammadbeigi1381@gmail.com)
+  - GitHub: [@mbmohammad](https://github.com/mbmohammad)

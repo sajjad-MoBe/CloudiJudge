@@ -27,7 +27,7 @@
         <div style="color: red;">{{ .Message }}</div>
     {{end}}
 
-    <div class="problem-statement">{{ .Problem.Statement }}</div>
+    <div class="problem-statement">{{ breaklines .Problem.Statement }}</div>
 
     {{ if .Problem.IsPublished }}
         <div class="solution-section">

@@ -18,12 +18,12 @@ services:
         volumes:
             - ${PROBLEM_UPLOAD_FOLDER_SRC}:${PROBLEM_UPLOAD_FOLDER}
         depends_on:
-            ${POSTGRES_HOST}:
+            db:
                 condition: service_healthy
 
 
 
-    ${POSTGRES_HOST}:
+    db:
         image: postgres:latest
         restart: always
         environment:
