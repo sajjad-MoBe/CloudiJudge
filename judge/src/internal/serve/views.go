@@ -172,7 +172,6 @@ func showProfileView(c *fiber.Ctx) error {
 			return error_404(c)
 		}
 	}
-	fmt.Println(c.Path(), profileUser.ID)
 
 	var submissions []Submission
 
