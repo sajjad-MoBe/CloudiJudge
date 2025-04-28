@@ -262,6 +262,8 @@ func problemsetView(c *fiber.Ctx) error {
 
 	if limit > 100 {
 		limit = 100 // Max limit = 100
+	} else if limit < 1 {
+		limit = 1
 	}
 	if offset < 0 {
 		offset = 0
@@ -273,7 +275,7 @@ func problemsetView(c *fiber.Ctx) error {
 	start := time.Now()
 
 	err := db.Model(&Problem{}).
-		Select("id, title, statement, published_at").
+		Select("id, title, statement, is_published, published_at").
 		Where("is_published = ?", true).
 		Offset(offset).Limit(limit).
 		Order("published_at DESC").
@@ -285,8 +287,9 @@ func problemsetView(c *fiber.Ctx) error {
 	if err != nil {
 		return render(c.Status(fiber.StatusInternalServerError), "problemset", fiber.Map{
 			"PageTitle": "CloudiJudge | problemset",
+			"User":      user,
 			"Problems":  problems,
-			"Total":     0,
+			"Total":     int(total),
 			"Limit":     0,
 			"Offset":    0,
 			"Pages":     0,
@@ -294,12 +297,14 @@ func problemsetView(c *fiber.Ctx) error {
 	}
 
 	return render(c, "problemset", fiber.Map{
-		"PageTitle": "CloudiJudge | problemset",
-		"Problems":  problems,
-		"Total":     total,
-		"Limit":     limit,
-		"Offset":    offset,
-		"Pages":     (int(total) + limit - 1) / limit, // Total pages
+		"PageTitle":   "CloudiJudge | problemset",
+		"User":        user,
+		"Problems":    problems,
+		"Total":       int(total),
+		"Limit":       limit,
+		"Offset":      offset,
+		"CurrentPage": (offset / limit) + 1,
+		"Pages":       (int(total) + limit - 1) / limit, // Total pages
 	})
 }
 

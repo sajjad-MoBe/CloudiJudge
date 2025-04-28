@@ -32,9 +32,11 @@ body {
     border-radius: 15px;
     box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
     width: 70%;
-    /* max-width: 400px; */
     margin: 1rem;
     backdrop-filter: blur(10px);
+    overflow-y: scroll;
+    /* height: calc(100vh - 100px); */
+    margin-top: 100px;
 }
 
 h1 {
@@ -493,23 +495,50 @@ select:valid + .error-message::after {
     margin-top: 1rem;
 }
 
+
 .page-btn {
-    padding: 6px 12px;
-    border: 1px solid #ddd;
-    background: white;
-    border-radius: 4px;
+    background: var(--primary-color);
+    color: white !important;
+    border: none;
+    padding: 0.5rem 1.5rem;
+    border-radius: 5px;
     cursor: pointer;
     transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
 }
 
-.page-btn:hover {
-    background-color: #f8f9fa;
+.page-btn:disabled {
+    background: #ccc;
+    cursor: not-allowed;
 }
 
-.page-btn.active {
-    background-color: #007bff;
-    color: white;
-    border-color: #007bff;
+.page-btn:not(:disabled):hover {
+    background: #357abd;
+    transform: translateY(-2px);
+    color: bisque !important;
+}
+
+/* Standardize button sizes */
+.add-problem-btn,
+.signout-btn,
+.page-btn {
+    padding: 0.75rem 1.5rem;
+    min-width: 120px;
+    text-align: center;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+@media (max-width: 768px) {
+    .add-problem-btn,
+    .signout-btn,
+    .page-btn {
+        padding: 0.6rem 1.2rem;
+        min-width: 100px;
+    }
 }
 
 /* Toast Notification */
@@ -703,4 +732,161 @@ select:valid + .error-message::after {
     border-radius: 4px;
     font-size: 13px;
     color: #34070d;
+}
+.publish-problem-btn {
+    display: inline-block;
+    padding: 2px 6px;
+    background-color: #6bf18a;
+    border: 1px solid #67d546;
+    border-radius: 4px;
+    font-size: 13px;
+    color: #34070d;
+}
+
+.unpublish-problem-btn {
+    display: inline-block;
+    padding: 2px 6px;
+    background-color: #f1986b;
+    border: 1px solid #d56f46;
+    border-radius: 4px;
+    font-size: 13px;
+    color: #34070d;
+}
+
+
+/* Navigation Bar Styles */
+.nav-bar {
+    background-color: #ffffff;
+    padding: 1rem;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 1000;
+    width: 100%;
+}
+
+.nav-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    gap: 1rem;
+}
+
+.nav-item {
+    position: relative;
+}
+
+.nav-link {
+    color: var(--secondary-color);
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem !important;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+    font-weight: 500;
+}
+
+.nav-link:hover {
+    background: rgba(74, 144, 226, 0.1);
+    transform: translateY(-2px);
+    color: var(--primary-color) !important;
+}
+
+.nav-link.active {
+    background: var(--primary-color);
+    color: white !important;
+}
+
+.nav-link i {
+    font-size: 1.2rem;
+}
+
+.nav-link.sign-out {
+    color: var(--error-color);
+}
+
+.nav-link.sign-out:hover {
+    background: var(--error-color);
+    color: white !important;
+}
+
+
+.page-header {
+    margin-bottom: 2rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.page-title {
+    color: var(--secondary-color);
+    font-size: 2rem;
+    margin-bottom: 0.5rem;
+}
+
+.user-info {
+    color: var(--secondary-color);
+    font-size: 1rem;
+    opacity: 0.8;
+}
+
+
+.submission-card {
+    background-color: #ffffff;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 1.5rem;
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr auto;
+    gap: 1rem;
+    align-items: center;
+    transition: transform 0.2s ease;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+}
+
+.submission-card:hover {
+    transform: translateY(-2px);
+    background: rgba(255, 255, 255, 0.08);
+}
+
+.submission-card.success {
+    border-left: 4px solid var(--success-color);
+}
+
+.submission-card.error {
+    border-left: 4px solid var(--error-color);
+}
+
+.submission-card.waiting {
+    border-left: 4px solid var(--warning-color);
+}
+
+.problem-info {
+    display: flex;
+    flex-direction: column;
+}
+
+.problem-title {
+    color: var(--secondary-color);
+    text-decoration: none;
+    font-weight: 500;
+    font-size: 1.1rem;
+    transition: color 0.3s ease;
+}
+
+.problem-title:hover {
+    color: var(--primary-color);
+}
+
+.problem-statement {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    width: 40%;
 }

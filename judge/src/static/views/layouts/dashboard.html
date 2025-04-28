@@ -4,8 +4,72 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{.PageTitle}}</title>
-    <link rel="stylesheet" href="/static/styles.css">
+    <link rel="stylesheet" href="/static/main.css">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+
 </head>
-    {{embed}}
+    <body>
+        <nav class="nav-bar">
+            <ul class="nav-list">
+                <li class="nav-item" data-tooltip="Profile">
+                    <a href="/user/{{ .User.ID }}" class="nav-link" id="profile-nav-btn">
+                        <i class="fas fa-user"></i>
+                        <span class="nav-text">Profile</span>
+                    </a>
+                </li>
+                <li class="nav-item" data-tooltip="My Submissions">
+                    <a href="/user/{{ .User.ID }}/submissions" class="nav-link" id="submissions-nav-btn">
+                        <i class="fas fa-paper-plane"></i>
+                        <span class="nav-text">My Submissions</span>
+                    </a>
+                </li>
+                <li class="nav-item" data-tooltip="My Problems">
+                    <a href="/problemset?owner={{ .User.ID }}" class="nav-link" id="myproblems-nav-btn">
+                        <i class="fas fa-tasks"></i>
+                        <span class="nav-text">My Problems</span>
+                    </a>
+                </li>
+                <li class="nav-item" data-tooltip="Problem Set">
+                    <a href="/problemset" class="nav-link" id="problemset-nav-btn">
+                        <i class="fas fa-list-alt"></i>
+                        <span class="nav-text">Problem Set</span>
+                    </a>
+                </li>
+                <li class="nav-item" data-tooltip="Add Problem">
+                    <a href="/problemset/add" class="nav-link" id="add-problem-nav-btn">
+                        <i class="fas fa-plus-circle"></i>
+                        <span class="nav-text">Add Problem</span>
+                    </a>
+                </li>
+                <li class="nav-item" data-tooltip="Sign Out">
+                    <a href="/signout" class="nav-link sign-out">
+                        <i class="fas fa-sign-out-alt"></i>
+                        <span class="nav-text">Sign Out</span>
+                    </a>
+                </li>
+            </ul>
+        </nav>
+        {{embed}}
+
+        <script>
+            // document.addEventListener("DOMContentLoaded", function() {
+            //     if (pathname.startsWith('/problemset?owner')) {
+            //         document.getElementById('myproblems-nav-btn').classList.add('active');
+
+            //     } else if (pathname.startsWith('/problemset/add')) {
+            //         document.getElementById('add-problem-nav-btn').classList.add('active');
+
+            //     } else if (pathname.startsWith('/problemset')) {
+            //         document.getElementById('problemset-nav-btn').classList.add('active');
+
+            //     } else if (pathname.startsWith(`/user/${user_id}/submissions`)) {
+            //         document.getElementById('submissions-nav-btn').classList.add('active');
+                    
+            //     } else if (pathname.startsWith('/user/'+user_id)) {
+            //         document.getElementById('profile-nav-btn').classList.add('active');
+            //     }
+            // })
+        </script>
+    </body> 
 </html>
