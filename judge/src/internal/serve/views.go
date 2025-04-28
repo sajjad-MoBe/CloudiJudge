@@ -353,6 +353,9 @@ func handleAddProblemView(c *fiber.Ctx) error {
 	} else if parseInt(c.FormValue("memory_limit")) <= 0 {
 		errorMsg = "Memory limit most be a positive number."
 
+	} else if parseInt(c.FormValue("memory_limit")) <= 500 {
+		errorMsg = "Memory limit most be less than 500."
+
 	} else {
 
 		problem = Problem{
@@ -425,7 +428,7 @@ func editProblemView(c *fiber.Ctx) error {
 		var user User
 		result := db.First(&user, userID)
 		if result.Error != nil {
-			return c.Status(fiber.StatusInternalServerError).SendString("خطا در دریافت اطلاعات کاربر")
+			return c.Redirect("/login")
 		}
 		if !user.IsAdmin {
 			return error_403(c)
@@ -433,7 +436,7 @@ func editProblemView(c *fiber.Ctx) error {
 	}
 
 	return render(c, "add_problem", fiber.Map{
-		"PageTitle":   "CloudiJudge | ساخت سوال",
+		"PageTitle":   "CloudiJudge | edit problem",
 		"Title":       problem.Title,
 		"Statement":   problem.Statement,
 		"TimeLimit":   problem.TimeLimit,
@@ -460,7 +463,7 @@ func handleEditProblemView(c *fiber.Ctx) error {
 		var user User
 		result := db.First(&user, userID)
 		if result.Error != nil {
-			return c.Status(fiber.StatusInternalServerError).SendString("خطا در دریافت اطلاعات کاربر")
+			return c.Redirect("/login")
 		}
 		if !user.IsAdmin {
 			return error_403(c)
@@ -470,38 +473,41 @@ func handleEditProblemView(c *fiber.Ctx) error {
 	var errorMsg string = ""
 
 	if len(c.FormValue("title")) < 5 || len(c.FormValue("title")) > 50 {
-		errorMsg = "طول عنوان وارد شده باید بین 5 الی 50 کاراکتر باشد."
+		errorMsg = "Title length most be between 5 and 50."
 
 	} else if len(c.FormValue("statement")) < 100 || len(c.FormValue("statement")) > 5000 {
-		errorMsg = "طول توضیحات وارد شده باید بین 100 الی 5000 کاراکتر باشد."
+		errorMsg = "Statement length most be between 100 and 5000."
 
 	} else if parseInt(c.FormValue("time_limit")) <= 0 {
-		errorMsg = "محدودیت زمانی باید یک عدد مثبت باشد."
+		errorMsg = "Time limit most be a positive number."
 
 	} else if parseInt(c.FormValue("memory_limit")) <= 0 {
-		errorMsg = "محدودیت حافظه باید یک عدد مثبت کمتر از هزار باشد."
+		errorMsg = "Memory limit most be a positive number."
 
-	} else if parseInt(c.FormValue("memory_limit")) >= 1000 {
-		errorMsg = "محدودیت حافظه باید یک عدد مثبت کمتر از هزار باشد."
+	} else if parseInt(c.FormValue("memory_limit")) >= 500 {
+		errorMsg = "Memory limit most be less than 500."
 
 	} else {
-
 		problemDir := filepath.Join(os.Getenv("PROBLEM_UPLOAD_FOLDER"), fmt.Sprintf("%d", problem.ID))
 		inputFile, inputErr := c.FormFile("input_file")
 		outputFile, outputErr := c.FormFile("output_file")
 
 		if inputErr == nil {
 			if inputFile.Size > 10*1024*1024 {
-				errorMsg = "حجم فایل های ارسالی نباید بیشتر از 10 مگابایت باشد."
+				errorMsg = "Input file size most be less than 10Mb"
+
 			} else if err := c.SaveFile(inputFile, filepath.Join(problemDir, "input.txt")); err != nil {
-				errorMsg = "خطایی در ذخیره فایل ورودی ها رخ داد."
+				log.Println("error in save input file for problem", problem.ID, err)
+				errorMsg = "An unknown error has been occurred!"
 			}
 		}
 		if errorMsg == "" && outputErr == nil {
 			if outputFile.Size > 10*1024*1024 {
-				errorMsg = "حجم فایل های ارسالی نباید بیشتر از 10 مگابایت باشد."
+				errorMsg = "Output file size most be less than 10Mb"
+
 			} else if err := c.SaveFile(outputFile, filepath.Join(problemDir, "output.txt")); err != nil {
-				errorMsg = "خطایی در ذخیره فایل خروجی ها رخ داد."
+				log.Println("error in save output file for problem", problem.ID, err)
+				errorMsg = "An unknown error has been occurred!"
 			}
 		}
 		if errorMsg == "" {
@@ -516,7 +522,7 @@ func handleEditProblemView(c *fiber.Ctx) error {
 
 	}
 	return render(c, "add_problem", fiber.Map{
-		"PageTitle":   "CloudiJudge | ساخت سوال",
+		"PageTitle":   "CloudiJudge | edit problem",
 		"Error":       errorMsg,
 		"Title":       c.FormValue("title"),
 		"Statement":   c.FormValue("statement"),
