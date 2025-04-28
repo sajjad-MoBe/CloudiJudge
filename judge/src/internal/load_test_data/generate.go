@@ -19,7 +19,7 @@ func GenerateAndFill() {
 		fmt.Println("Data can't be generated")
 		return
 	}
-	for i := 1; i < 100_001; i++ {
+	for i := 1; i < 10_001; i++ {
 		fmt.Println("adding user", i+1)
 		user := serve.User{
 			Email:    fmt.Sprintf("test_user_%d@gmail.com", i),
@@ -29,9 +29,9 @@ func GenerateAndFill() {
 		db.Create(&user)
 	}
 	fmt.Println("test users were generated")
-	for i := 0; i < 500_000; i++ {
+	for i := 0; i < 50_000; i++ {
 		fmt.Println("adding problem", i+1)
-		randomIndex := rand.Intn(100_000) + 1
+		randomIndex := rand.Intn(50_000) + 1
 		isPublished := randomIndex%2 == 0
 		randomTime := time.Now().Add(-time.Duration(rand.Int63n(5*60*60)) * time.Second)
 
