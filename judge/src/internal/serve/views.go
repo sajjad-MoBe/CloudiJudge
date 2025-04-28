@@ -300,7 +300,6 @@ func problemsetView(c *fiber.Ctx) error {
 
 	duration := time.Since(start)
 	fmt.Printf("Time taken: %d ms\n", duration.Milliseconds())
-	fmt.Println(len(problems))
 
 	if err != nil {
 		return render(c.Status(fiber.StatusInternalServerError), "problemset", fiber.Map{
@@ -702,7 +701,7 @@ func handleSubmitProblemView(c *fiber.Ctx) error {
 	db.Delete(&submission)
 	return render(c, "show_problem", fiber.Map{
 		"PageTitle": "CloudiJudge | show problem",
-		"Error":     errorMsg,
+		"Message":   errorMsg,
 		"Problem":   problem,
 		"User":      user,
 	})

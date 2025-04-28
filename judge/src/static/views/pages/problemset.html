@@ -16,7 +16,7 @@
                             <a href="/problemset/{{ .ID }}" style="width: 15%;">{{ .Title }}</a>
                         </div>
                         
-                        <div class="problem-statement">{{ truncate .Statement 50 }}</div>
+                        <div class="minimal-problem-statement">{{ truncate .Statement 50 }}</div>
                         
                         <div class="submission-time"><i class="fas fa-clock" style="padding-right: 5px;"></i>
                         {{ if .IsPublished }}

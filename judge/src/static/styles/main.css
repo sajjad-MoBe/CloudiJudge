@@ -826,7 +826,7 @@ select:valid + .error-message::after {
 
 .page-title {
     color: var(--secondary-color);
-    font-size: 2rem;
+    font-size: 2.2rem;
     margin-bottom: 0.5rem;
 }
 
@@ -884,9 +884,32 @@ select:valid + .error-message::after {
     color: var(--primary-color);
 }
 
-.problem-statement {
+.minimal-problem-statement {
     display: flex;
     align-items: center;
     gap: 0.5rem;
     width: 40%;
+}
+
+.page-author {
+    padding-top: 10px;
+    color: var(--secondary-color);
+    opacity: 0.8;
+    font-size: 1.2rem;
+}
+
+.problem-limit {
+    color: var(--secondary-color);
+    opacity: 0.8;
+    font-size: 1.2rem;
+}
+.problem-statement {
+    background: #e1e8ef;
+    padding: 3rem;
+    border-radius: 8px;
+    margin-bottom: 2rem;
+    white-space: pre-wrap;
+    line-height: 1.6;
+    display: flex;
+    width: 100%;
 }

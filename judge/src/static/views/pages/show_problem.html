@@ -1,3 +1,50 @@
+
+<div class="container">
+    <div class="page-header">
+        <h1 class="page-title">Two Sum
+            {{ if .User.IsAdmin }}
+                {{ if .Problem.IsPublished }}
+                    <a class="unpublish-problem-btn" href="/problemset/{{.Problem.ID}}/unpublish">Unpublish</a>
+                {{ else }}
+                    <a class="publish-problem-btn" href="/problemset/{{.Problem.ID}}/publish">Publish</a>
+                {{ end }}
+            {{ end }}
+        </h1>
+        
+        <div style="display: flex; justify-content: space-between;">
+            <div class="page-author">Created by: <a href="/user/{{.Problem.OwnerID}}">{{ .Problem.Owner.Email }}</a></div>
+            <div style="width: 200px;">
+                <div class="problem-limit">Time limit: {{ .Problem.TimeLimit }} ms</div>
+                <div class="problem-limit">Memory limit: {{ .Problem.MemoryLimit }} Mb</div>
+            </div>
+        </div>
+        
+    </div>
+    {{if .Message }}
+        <div style="color: red;">{{ .Message }}</div>
+    {{end}}
+
+    <div class="problem-statement">{{ .Problem.Statement }}</div>
+
+    {{ if .Problem.IsPublished }}
+        <div class="solution-section">
+            <h2>Submit Your Solution</h2>
+            <div class="upload-container">
+                <form id="solution-form" action="/problemset/{{.Problem.ID}}" method="POST" enctype="multipart/form-data">
+                    <div class="mb-3">
+                        <label for="code-file" class="form-label">Upload your code file</label>
+                        <input type="file" class="form-control" id="code-file" name="submit_file" accept=".go" required>
+                    </div>
+                    <button type="submit" class="upload-btn">
+                        <i class="fas fa-upload"></i>
+                        Submit Solution
+                    </button>
+                </form>
+            </div>
+        </div>
+    {{ end }}
+</div>
+
 <!-- <body>
     {{if .Error}}
         <div style="color: red;">{{.Error}}</div>
