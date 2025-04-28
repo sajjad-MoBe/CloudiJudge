@@ -25,12 +25,24 @@ func render(c *fiber.Ctx, name string, data interface{}) error {
 
 }
 
-func error_404(c *fiber.Ctx) error {
-	return c.Status(404).Render("pages/error_404", fiber.Map{}, "layouts/main")
+func error_404(c *fiber.Ctx, messages ...string) error {
+	var message string
+	if len(messages) > 0 {
+		message = messages[0]
+	}
+	return c.Status(404).Render("pages/error_404", fiber.Map{
+		"Message": message,
+	}, "layouts/error")
 }
 
-func error_403(c *fiber.Ctx) error {
-	return c.Status(403).Render("pages/error_403", fiber.Map{}, "layouts/main")
+func error_403(c *fiber.Ctx, messages ...string) error {
+	var message string
+	if len(messages) > 0 {
+		message = messages[0]
+	}
+	return c.Status(403).Render("pages/error_403", fiber.Map{
+		"Message": message,
+	}, "layouts/error")
 }
 
 func loginView(c *fiber.Ctx) error {

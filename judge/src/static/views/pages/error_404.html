@@ -1,2 +1,19 @@
-<h1>dadash donbal chi migardi</h1>
-<a href="/problemset">berim safhe asli</a>
+<body>
+    <div class="grid-pattern"></div>
+    <div class="error-container">
+        <i class="fas fa-compass error-icon"></i>
+        <h1 class="error-title">404 Not Found</h1>
+        <p class="error-message">Page Not Found</p>
+        <p class="error-description">
+            {{ if .Message }}
+                {{ .Message }}
+            {{ else }}
+                The page you're looking for doesn't exist or has been moved. Please check the URL or navigate back to the homepage.
+            {{ end }}
+        </p>
+        <a href="/problemset" class="home-btn">
+            <i class="fas fa-home"></i>
+            Return to Home
+        </a>
+    </div>
+</body>
