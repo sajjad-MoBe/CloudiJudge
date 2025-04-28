@@ -1,2 +1,19 @@
-<h1>dadash donbal chi mikoni, dastresi nadari</h1>
-<a href="/problemset">berim safhe asli</a>
+<body>
+    <div class="grid-pattern"></div>
+    <div class="error-container">
+        <i class="fas fa-lock error-icon"></i>
+        <h1 class="error-title">403 Forbidden</h1>
+        <p class="error-message">Access Denied</p>
+        <p class="error-description">
+            {{ if .Message }}
+                {{ .Message }}
+            {{ else }}
+                You don't have permission to access this page. Please make sure you're logged in with the correct credentials.
+            {{ end }}
+        </p>
+        <a href="/problemsset" class="home-btn">
+            <i class="fas fa-home"></i>
+            Return to Home
+        </a>
+    </div>
+</body>

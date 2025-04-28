@@ -117,6 +117,10 @@ Follow these steps to set up and run the **CloudiJudge** project:
 
 	Edit the `.env` file to set the following variables:
 
+	-  `PORT`: Application port
+
+	-  `POSTGRES_HOST`: Your PostgreSQL service name(default is `db` if you changed it on docker-comppose.yml you should also change this variable)
+
 	-  `POSTGRES_USER`: Your PostgreSQL username
 
 	-  `POSTGRES_PASSWORD`: Your PostgreSQL password
@@ -125,27 +129,56 @@ Follow these steps to set up and run the **CloudiJudge** project:
 
 	-  `POSTGRES_DATA_FOLDER`: The folder for PostgreSQL data (e.g., `./postgres/data`)
 
-  
+	-  `PROBLEM_UPLOAD_FOLDER_SRC`: The folder for save problem related files(input, output, codes) on host (e.g., `./problems`)
 
-3.  **Start project**
+	-  `PROBLEM_UPLOAD_FOLDER`: The folder for save problem related files on services (e.g., `/problems`)
 
-	Start the application using Docker Compose:
+	-  `MAX_CONCURRENT_RUNS`: Max concurrent code runs in a single code-runner service
+
+
+3. **Build go code runner**
+	build go code runner using this command:
 
 	```bash
 
-	docker-compose up
+	docker build -t go-code-runner ./go-runner
+
+	```
+
+4.  **Run and Deploy**
+
+	Start the application using Docker Compose (you can change scale of code runners):
+
+	```bash
+
+	docker-compose up --scale code-runner=3
 
 	```
 
   
-	
 	- To run it in the background (detached mode), use:
 
-		``docker-compose up -d``
+		``docker-compose up --build --scale code-runner=3 -d``
 
 	- To force a rebuild of the application, add the `--build` flag:
 
-	  ``docker-compose up -d --build``
+	  ``docker-compose up --scale code-runner=3 -d --build``
 
 4.  **Verify the Setup**
 	Once the containers are up, the application should be running and accessible as configured.
+	- To create an Admin user you can use this command:
+		``docker-compose exec judge create-admin --email=sajjad@beigi.com``
+	
+	- You also can fill database with test data using (erase=true for delete test datas):
+		``docker-compose exec judge load-test-data erase=false``
+
+
+## Contributors
+
+- Sajjad: Implemented the backend part of the website.
+  - Email: [sajjad.mohammadbeigi@gmail.com](mailto:sajjad.mohammadbeigi@gmail.com)
+  - GitHub: [@sajjad-MoBe](https://github.com/sajjad-MoBe)
+
+- Mohammad: Implemented the frontend part of the website.
+  - Email: [mohammadmohammadbeigi1381@gmail.com](mailto:mohammadmohammadbeigi1381@gmail.com)
+  - GitHub: [@mbmohammad](https://github.com/mbmohammad)

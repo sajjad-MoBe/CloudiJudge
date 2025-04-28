@@ -11,6 +11,7 @@ import (
 	"net/http"
 	"net/mail"
 	"strconv"
+	"strings"
 	"sync"
 	"time"
 	"unicode"
@@ -95,6 +96,10 @@ func Truncate(s string, maxLength int) string {
 		return s[:maxLength] + "..."
 	}
 	return s
+}
+
+func Breaklines(s string) string {
+	return strings.ReplaceAll(s, "\n", "<br>")
 }
 
 func TimeAgo(t time.Time) string {

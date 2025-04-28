@@ -44,29 +44,30 @@
                 </div>
             </div>
         {{end}}
-        <div>
-            
-            {{if gt .Offset 0}}
-                <!-- <a href="/user/{{.ProfileUser.ID}}/submissions?limit={{.Limit}}&offset=0"><<</a> -->
-                <a href="/user/{{.ProfileUser.ID}}/submissions?limit={{.Limit}}&offset={{sub .Offset .Limit}}">
-                    <i class="fas fa-chevron-left"></i>
-                </a>
-                {{ if gt .Limit (sub .Total .Offset)}}
-                    <span>page: {{add (div .Total .Limit) 1}}</span>
+        {{if gt .Total 0}}
+            <div class="pagination">
+                {{if gt .Offset 0}}
+                    <a class="page-btn" href="/user/{{.ProfileUser.ID}}/submissions?limit={{.Limit}}&offset={{sub .Offset .Limit}}" disabled>
+                        <i class="fas fa-chevron-left"></i>Previous</a>
                 {{ else }}
-                    <span>page: {{div .Total .Limit}}</span>
-                {{ end }}
-            {{ else }}
-                <span>page: 1</span>
-            {{end}}
-    
-            {{if lt (add .Offset .Limit) .Total}}
-                <a href="/user/{{.ProfileUser.ID}}/submissions?limit={{.Limit}}&offset={{add .Offset .Limit}}">
-                    <i class="fas fa-chevron-right"></i>
-                </a>
-                <!-- <a href="/user/{{.ProfileUser.ID}}/submissions?limit={{.Limit}}&offset={{sub .Total .Limit}}">>></a> -->
-            {{end}}
-        </div>
+                    <button class="page-btn" disabled>
+                        <i class="fas fa-chevron-left"></i> Previous
+                    </button>
+                {{end}}
+        
+                <div class="page-info">Page {{ .CurrentPage }} of {{ .Pages }}</div>
+                {{if lt .CurrentPage .Pages}}
+                        <a href="/user/{{.ProfileUser.ID}}/submissions?limit={{.Limit}}&offset={{add .Offset .Limit}}" class="page-btn">Next
+                            <i class="fas fa-chevron-right"></i>
+                        </a>
+                {{ else }}
+                    <button class="page-btn" disabled>Next
+                        <i class="fas fa-chevron-right"></i>
+                    </button>
+                {{end}}
+            
+            </div>
+        {{ end }}
     </div>
     
 </body>

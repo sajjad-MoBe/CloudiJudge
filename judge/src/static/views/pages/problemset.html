@@ -1,43 +1,71 @@
-<body>
-    <h1>soala</h1>
-    <a href="/problemset/add" style="font-size: large;">sakht soal</a>
-
-    {{if eq .Total 0}}
-        <p>No problems are available at the moment. Please check back later!</p>
-    {{else}}
-        <table>
-            <thead>
-                <tr>
-                    <th>#</th>
-                    <th>Title</th>
-                    <th>Statement</th>
-                    <th>Time Limit (ms)</th>
-                    <th>Memory Limit (MB)</th>
-                </tr>
-            </thead>
-            <tbody>
-                {{range .Problems}}
-                <tr>
-                    <td>{{.ID}}</td>
-                    <td><a href="/problemset/{{.ID}}">{{.Title}}</a></td>
-                    <td>{{truncate .Statement 50}}</td>
-                    <td>{{.TimeLimit}}</td>
-                    <td>{{.MemoryLimit}}</td>
-                </tr>
-                {{end}}
-            </tbody>
-        </table>
-    {{ end }}
-
-    <div>
-        {{if gt .Offset 0}}
-        <a href="/problemset?limit={{.Limit}}&offset={{sub .Offset .Limit}}">Previous</a>
-        {{end}}
-
-        {{if lt (add .Offset .Limit) .Total}}
-        <a href="/problemset?limit={{.Limit}}&offset={{add .Offset .Limit}}">Next</a>
-        {{end}}
+<div class="container">
+    <div class="page-header">
+        <div>
+            <h1 class="page-title">Problem Set</h1>
+            <div class="user-info">User: {{ .User.Email }}</div>
+        </div>
     </div>
+        {{if eq .Total 0}}
+            <p>No problems are available at the moment. Please check back later!</p>
+        {{else}}
+            <!-- Problem list -->
+            <div class="submissions-list">
+                {{range .Problems }}
+                    <div class="submission-item success">
+                        <div class="submission-title">
+                            <a href="/problemset/{{ .ID }}" style="width: 15%;">{{ .Title }}</a>
+                        </div>
+                        
+                        <div class="minimal-problem-statement">{{ truncate .Statement 50 }}</div>
+                        
+                        <div class="submission-time"><i class="fas fa-clock" style="padding-right: 5px;"></i>
+                        {{ if .IsPublished }}
+                            {{ timeAgo .PublishedAt}}
+                        {{ else }}
+                            Not published yet!
+                        {{ end }}
+                        </div>
+                        {{ if $.User.IsAdmin }}
+                            {{ if .IsPublished }}
+                                <a href="/problemset/{{.ID}}/unpublish?next=problemset&myproblems={{$.Myproblems}}" class="unpublish-problem-btn">UnPublish</a>
+                            {{ else }}
+                                <a href="/problemset/{{.ID}}/publish?next=problemset&myproblems={{$.Myproblems}}" class="publish-problem-btn">Publish</a>
+                            {{ end }}
+                        {{ end }}
+                    </div>
+                {{end}}
+            </div>
+        {{ end }}
 
-    <a href="/signout" style="font-size: large;">khorooj</a>
-</body>
+    <!-- Pagination -->
+    {{if gt .Total 0}}
+        <div class="pagination">
+            {{if gt .Offset 0}}
+                
+                <a class="page-btn" href='/problemset?limit={{.Limit}}&offset={{sub .Offset .Limit}}{{if eq .Myproblems "yes"}}&myproblems=yes{{end}}' disabled>
+                    <i class="fas fa-chevron-left"></i>Previous</a>
+            {{ else }}
+                <button class="page-btn" disabled>
+                    <i class="fas fa-chevron-left"></i> Previous
+                </button>
+            {{end}}
+
+            <div class="page-info">Page {{ .CurrentPage }} of {{ .Pages }}</div>
+            {{if lt .CurrentPage .Pages}}
+                    <a href='/problemset?limit={{.Limit}}&offset={{add .Offset .Limit}}{{if eq .Myproblems "yes"}}&myproblems=yes{{end}}' class="page-btn">Next
+                        <i class="fas fa-chevron-right"></i>
+                    </a>
+            {{ else }}
+                <button class="page-btn" disabled>Next
+                    <i class="fas fa-chevron-right"></i>
+                </button>
+            {{end}}
+        </div>
+    {{ end }}
+</div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        document.getElementById('problems-nav-btn').classList.add('active');
+    })
+</script>

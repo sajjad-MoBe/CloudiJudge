@@ -26,6 +26,7 @@ func StartListening(port int) {
 	htmlEngine.AddFunc("timeAgo", TimeAgo)
 
 	htmlEngine.AddFunc("truncate", Truncate)
+	htmlEngine.AddFunc("breaklines", Breaklines)
 
 	app := fiber.New(fiber.Config{
 		Views: htmlEngine,
@@ -42,7 +43,9 @@ func StartListening(port int) {
 	app.Post("/signup", handleSignupView)
 	app.Get("/logout", logoutView)
 
+	app.Get("/user/submissions", isAuthenticated, submissionsView)
 	app.Get("/user/:id", isAuthenticated, showProfileView)
+	app.Get("/user", isAuthenticated, showProfileView)
 	app.Post("/user/:id/promote", isAuthenticated, promoteUserView)
 	app.Post("/user/:id/demote", isAuthenticated, demoteUserView)
 

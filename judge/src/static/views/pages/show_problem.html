@@ -1,38 +1,49 @@
-<body>
-    {{if .Error}}
-        <div style="color: red;">{{.Error}}</div>
-    {{end}}
-    <h2>{{.Problem.Title}} by <a href="/user/{{.Problem.OwnerID}}"> {{.Problem.Owner.Email}} </a>
-        (
-            {{ if .Problem.IsPublished }}
-                Published
-            {{ else }}
-                Draft
+
+<div class="container">
+    <div class="page-header">
+        <h1 class="page-title">Two Sum
+            {{ if .User.IsAdmin }}
+                {{ if .Problem.IsPublished }}
+                    <a class="unpublish-problem-btn" href="/problemset/{{.Problem.ID}}/unpublish">Unpublish</a>
+                {{ else }}
+                    <a class="publish-problem-btn" href="/problemset/{{.Problem.ID}}/publish">Publish</a>
+                {{ end }}
             {{ end }}
-        )
-        {{ if .User.IsAdmin }}
-            {{ if .Problem.IsPublished }}
-                <a href="/problemset/{{.Problem.ID}}/unpublish">Unpublish</a>
-            {{ else }}
-                <a href="/problemset/{{.Problem.ID}}/publish">Publish</a>
+            {{ if or .User.IsAdmin (eq .Problem.OwnerID .User.ID) }}
+                <a class="edit-problem-btn" href="/problemset/{{.Problem.ID}}/edit">Edit</a>
             {{ end }}
-        {{ end }}
+        </h1>
         
-    </h2>
-    {{ if or .User.IsAdmin ( eq .User.ID .Problem.OwnerID) }}
-        <a href="/problemset/{{.Problem.ID}}/edit"> edit </a>
-    {{ end }}
-    <p><strong>Statement:</strong> {{.Problem.Statement}}</p>
-    <p><strong>Time Limit:</strong> {{.Problem.TimeLimit}} seconds</p>
-    <p><strong>Memory Limit:</strong> {{.Problem.MemoryLimit}} MB</p>
-    {{ if .User.IsAdmin}}
-        <p><strong>Input File:</strong> <a href="/problemset/{{.Problem.ID}}/dl/input.txt" target="_blank">click to download</a></p>
-        <p><strong>Output File:</strong> <a href="/problemset/{{.Problem.ID}}/dl/output.txt" target="_blank">click to download</a></p>
+        <div style="display: flex; justify-content: space-between;">
+            <div class="page-author">Created by: <a href="/user/{{.Problem.OwnerID}}">{{ .Problem.Owner.Email }}</a></div>
+            <div style="width: 200px;">
+                <div class="problem-limit">Time limit: {{ .Problem.TimeLimit }} ms</div>
+                <div class="problem-limit">Memory limit: {{ .Problem.MemoryLimit }} Mb</div>
+            </div>
+        </div>
+        
+    </div>
+    {{if .Message }}
+        <div style="color: red;">{{ .Message }}</div>
     {{end}}
 
-    <form action="/problemset/{{.Problem.ID}}" method="POST" enctype="multipart/form-data">
-        <input type="file" name="submit_file" accept=".go" required />
-        <button type="submit">Upload</button>
-    </form>
-    <a href="/problemset">all Problems</a>
-</body>
+    <div class="problem-statement">{{ breaklines .Problem.Statement }}</div>
+
+    {{ if .Problem.IsPublished }}
+        <div class="solution-section">
+            <h2>Submit Your Solution</h2>
+            <div class="upload-container">
+                <form id="solution-form" action="/problemset/{{.Problem.ID}}" method="POST" enctype="multipart/form-data">
+                    <div class="mb-3">
+                        <label for="code-file" class="form-label">Upload your code file</label>
+                        <input type="file" class="form-control" id="code-file" name="submit_file" accept=".go" required>
+                    </div>
+                    <button type="submit" class="upload-btn">
+                        <i class="fas fa-upload"></i>
+                        Submit Solution
+                    </button>
+                </form>
+            </div>
+        </div>
+    {{ end }}
+</div>

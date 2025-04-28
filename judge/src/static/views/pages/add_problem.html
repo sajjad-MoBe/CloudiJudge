@@ -1,48 +1,96 @@
-<body>
-    {{ if .Edit }}
-        <h1>edit Problem</h1>
-    {{ else }}
-        <h1>sakht Problem jadid</h1>
-    {{ end }}
-
-    {{if .Error}}
-        <div style="color: red;">{{.Error}}</div>
-    {{end}}
-
-    <form 
-        action="{{if .Edit}}/problemset/{{.ProblemID}}/edit{{else}}/problemset/add{{end}}"
-        method="POST" enctype="multipart/form-data"
-    >
-        <label for="title">Title:</label><br>
-        <input type="text" id="title" name="title" value="{{.Title}}"><br><br>
-        
-        <label for="statement">Statement:</label><br>
-        <textarea id="statement" name="statement">{{.Statement}}</textarea><br><br>
-        
-        <label for="time_limit">Time Limit (milliseconds):</label><br>
-        <input type="number" id="time_limit" name="time_limit" value="{{.TimeLimit}}" step="0" min="0"><br><br>
-        
-        <label for="memory_limit">Memory Limit (MB):</label><br>
-        <input type="number" id="memory_limit" name="memory_limit" value="{{.MemoryLimit}}" step="0" min="0"><br><br>
-        
+<div class="container" style="width: 60%;">
+    <div class="page-header">
         {{ if .Edit }}
-            <label for="input_file">Input File:</label><br>
-            <input type="file" id="input_file" name="input_file">
-                <a href="/problemset/{{.ProblemID}}/dl/input.txt" target="_blank">click to download</a>
-            <br><br>
-            
-            <label for="output_file">Output File:</label><br>
-            <input type="file" id="output_file" name="output_file">
-                <a href="/problemset/{{.ProblemID}}/dl/output.txt" target="_blank">click to download</a>
-            <br><br>
-            <button type="submit">Edit Problem</button>
+            <h1 class="page-title">Edit Problem</h1>
         {{ else }}
-            <label for="input_file">Input File:</label><br>
-            <input type="file" id="input_file" name="input_file"><br><br>
-            
-            <label for="output_file">Output File:</label><br>
-            <input type="file" id="output_file" name="output_file"><br><br>
-            <button type="submit">Create Problem</button>
+            <h1 class="page-title">Create New Problem</h1>
+        {{ end }}
+    </div>
+    {{if .Message}}
+        <div style="color: red;">{{.Message}}</div>
+    {{end}}
+    <form id="problem-form" action="{{if .Edit}}/problemset/{{.ProblemID}}/edit{{else}}/problemset/add{{end}}"
+        method="POST" enctype="multipart/form-data">
+        <!-- Basic Information Section -->
+        <div class="form-section">
+            <h2>Basic Information</h2>
+            <div class="mb-3">
+                <label for="problem-title" class="form-label">Problem Title</label>
+                <input type="text" class="form-control" id="problem-title" name="title" value="{{.Title}}" required>
+            </div>
+            <div class="mb-3">
+                <label for="problem-statement" class="form-label">Problem Statement</label>
+                <textarea class="form-control textarea-control" id="problem-statement" style="min-height: 200px"
+                     name="statement"required>{{.Statement}}</textarea>
+            </div>
+        </div>
+
+        <!-- Limits Section -->
+        <div class="form-section">
+            <h2>Problem Limits</h2>
+            <div class="limits-container">
+                <div class="mb-3">
+                    <label for="time-limit" class="form-label">Time Limit (milliseconds)</label>
+                    <input type="number" class="form-control" id="time-limit" min="1"
+                            name="time_limit" value="{{.TimeLimit}}" required>
+                </div>
+                <div class="mb-3">
+                    <label for="memory-limit" class="form-label">Memory Limit (Mb)</label>
+                    <input type="number" class="form-control" id="memory-limit" min="1"
+                            name="memory_limit" value="{{.MemoryLimit}}" required>
+                </div>
+            </div>
+        </div>
+
+        <!-- Test Cases Section -->
+        {{ if .Edit }}
+            <div class="form-section">
+                <h2>Test Cases</h2>
+                <!-- Input File Upload -->
+                <div class="file-upload-section" style="padding-top: 20px;">
+                    <h4>Input File <a href="/problemset/{{.ProblemID}}/dl/input.txt" target="_blank" style="font-size: 14px;">click to download</a></h4>
+                    <input type="file" id="input-file" class="file-input" name="input_file">
+                </div>
+                <!-- Output File Upload -->
+                <div class="file-upload-section" style="padding-top: 30px;">
+                    <h4>Output File <a href="/problemset/{{.ProblemID}}/dl/output.txt" target="_blank" style="font-size: 14px;">click to download</a></h4>
+                    <input type="file" id="output-file" class="file-input" name="output_file" optio>
+                </div>
+            </div>
+            <button type="submit" class="submit-btn"><i class="fas fa-save"></i> Edit Problem</button>
+        {{ else }}
+            <div class="form-section">
+                <h2>Test Cases</h2>
+                <!-- Input File Upload -->
+                <div class="file-upload-section" style="padding-top: 20px;">
+                    <h4>Input File</h4>
+                    <input type="file" id="input-file" class="file-input" accept=".txt" name="input_file" required>
+                </div>
+                <!-- Output File Upload -->
+                <div class="file-upload-section" style="padding-top: 30px;">
+                    <h4>Output File</h4>
+                    <input type="file" id="output-file" class="file-input" accept=".txt" name="output_file" required>
+                </div>
+            </div>
+            <button type="submit" class="submit-btn"><i class="fas fa-save"></i> Create Problem</button>
         {{ end }}
     </form>
-</body>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Handle file input changes
+        const inputFile = document.getElementById('input-file');
+        const outputFile = document.getElementById('output-file');
+        const inputFileName = document.getElementById('input-file-name');
+        const outputFileName = document.getElementById('output-file-name');
+
+        inputFile.addEventListener('change', function() {
+            inputFileName.textContent = this.files[0] ? this.files[0].name : 'No file chosen';
+        });
+
+        outputFile.addEventListener('change', function() {
+            outputFileName.textContent = this.files[0] ? this.files[0].name : 'No file chosen';
+        });
+    });
+</script>
