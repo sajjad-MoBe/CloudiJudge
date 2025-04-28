@@ -2,6 +2,7 @@ package serve
 
 import (
 	"fmt"
+	"log"
 	"os"
 	"path/filepath"
 	"strconv"
@@ -69,15 +70,14 @@ func handleLoginView(c *fiber.Ctx) error {
 		errorMsg = "Email or password is invalid!"
 
 	} else if sess, err := store.Get(c); err != nil {
-		errorMsg = "An unknown error has occurred!"
+		errorMsg = "An unknown error has been occurred!"
 
 	} else {
 		sess.Set("user_id", user.ID)
 		sess.Save()
-
 		return c.Redirect("/problemset")
 	}
-	return render(c, "login", fiber.Map{
+	return render(c.Status(fiber.StatusBadRequest), "login", fiber.Map{
 		"PageTitle": "CloudiJudge | login",
 		"Message":   errorMsg,
 		"Email":     email,
@@ -87,7 +87,6 @@ func handleLoginView(c *fiber.Ctx) error {
 
 func signupView(c *fiber.Ctx) error {
 	var email string
-
 	return render(c, "signup", fiber.Map{
 		"PageTitle": "CloudiJudge | signup",
 		"Email":     email,
@@ -183,7 +182,7 @@ func showProfileView(c *fiber.Ctx) error {
 	}
 
 	return render(c, "show_profile", fiber.Map{
-		"PageTitle":   "CloudiJudge | پروفایل کاربر",
+		"PageTitle":   "CloudiJudge | profile",
 		"ProfileUser": profileUser,
 		"User":        user,
 		"Submissions": submissions,
@@ -256,7 +255,7 @@ func problemsetView(c *fiber.Ctx) error {
 	var user User
 	result := db.First(&user, userID)
 	if result.Error != nil {
-		return c.Status(fiber.StatusInternalServerError).SendString("خطا در دریافت اطلاعات کاربر")
+		return c.Redirect("/login")
 	}
 	limit := c.QueryInt("limit", 10)  // Default limit = 10
 	offset := c.QueryInt("offset", 0) // Default offset = 0
@@ -284,24 +283,30 @@ func problemsetView(c *fiber.Ctx) error {
 	fmt.Printf("Time taken: %d ms\n", duration.Milliseconds())
 
 	if err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"error": "Failed to fetch problems",
+		return render(c.Status(fiber.StatusInternalServerError), "problemset", fiber.Map{
+			"PageTitle": "CloudiJudge | problemset",
+			"Problems":  problems,
+			"Total":     0,
+			"Limit":     0,
+			"Offset":    0,
+			"Pages":     0,
 		})
 	}
 
 	return render(c, "problemset", fiber.Map{
-		"Problems": problems,
-		"Total":    total,
-		"Limit":    limit,
-		"Offset":   offset,
-		"Pages":    (int(total) + limit - 1) / limit, // Total pages
+		"PageTitle": "CloudiJudge | problemset",
+		"Problems":  problems,
+		"Total":     total,
+		"Limit":     limit,
+		"Offset":    offset,
+		"Pages":     (int(total) + limit - 1) / limit, // Total pages
 	})
 }
 
 func addProblemView(c *fiber.Ctx) error {
 
 	return render(c, "add_problem", fiber.Map{
-		"PageTitle": "CloudiJudge | ساخت سوال",
+		"PageTitle": "CloudiJudge | add problem",
 	})
 }
 
@@ -309,19 +314,19 @@ func handleAddProblemView(c *fiber.Ctx) error {
 	var errorMsg string = ""
 	var problem Problem
 	if len(c.FormValue("title")) < 5 || len(c.FormValue("title")) > 50 {
-		errorMsg = "طول عنوان وارد شده باید بین 5 الی 50 کاراکتر باشد."
+		errorMsg = "Title length most be between 5 and 50."
 
 	} else if result := db.Where("title = ?", c.FormValue("title")).First(&problem); result.Error == nil {
 		errorMsg = "The selected title is repetitive."
 
 	} else if len(c.FormValue("statement")) < 100 || len(c.FormValue("statement")) > 5000 {
-		errorMsg = "طول توضیحات وارد شده باید بین 100 الی 5000 کاراکتر باشد."
+		errorMsg = "Statement length most be between 100 and 5000."
 
 	} else if parseInt(c.FormValue("time_limit")) <= 0 {
-		errorMsg = "محدودیت زمانی باید یک عدد مثبت باشد."
+		errorMsg = "Time limit most be a positive number."
 
 	} else if parseInt(c.FormValue("memory_limit")) <= 0 {
-		errorMsg = "محدودیت حافظه باید یک عدد مثبت باشد."
+		errorMsg = "Memory limit most be a positive number."
 
 	} else {
 
@@ -335,28 +340,33 @@ func handleAddProblemView(c *fiber.Ctx) error {
 
 		// Save the problem to the database
 		if err := db.Create(&problem).Error; err != nil {
-			errorMsg = "خطایی در ذخیره سوال رخ داد."
+			log.Println("error in create problem", err)
+			errorMsg = "An unknown error has been occurred!"
 		} else {
 			problemDir := filepath.Join(os.Getenv("PROBLEM_UPLOAD_FOLDER"), fmt.Sprintf("%d", problem.ID))
 			if err := os.MkdirAll(problemDir, os.ModePerm); err != nil {
-				errorMsg = "خطایی در ایجاد سوال رخ داد."
+				log.Println("error in make directory for new problem", err)
+				errorMsg = "An unknown error has been occurred!"
 
 			} else if inputFile, err := c.FormFile("input_file"); err != nil {
-				errorMsg = "فایل ورودی ها نامعتبر است."
+				errorMsg = "Invalid input file."
 
 			} else if inputFile.Size > 10*1024*1024 {
-				errorMsg = "حجم فایل های ارسالی نباید بیشتر از 10 مگابایت باشد."
+				errorMsg = "Input file size most be less than 10Mb"
+
 			} else if outputFile, err := c.FormFile("output_file"); err != nil {
-				errorMsg = "فایل خروجی ها نامعتبر است."
+				errorMsg = "Invalid output file."
 
 			} else if outputFile.Size > 10*1024*1024 {
-				errorMsg = "حجم فایل های ارسالی نباید بیشتر از 10 مگابایت باشد."
+				errorMsg = "Output file size most be less than 10Mb"
 
 			} else if err := c.SaveFile(inputFile, filepath.Join(problemDir, "input.txt")); err != nil {
-				errorMsg = "خطایی در ذخیره فایل ورودی ها رخ داد."
+				log.Println("error in save input file for new problem", err)
+				errorMsg = "An unknown error has been occurred!"
 
 			} else if err := c.SaveFile(outputFile, filepath.Join(problemDir, "output.txt")); err != nil {
-				errorMsg = "خطایی در ذخیره فایل خروجی ها رخ داد."
+				log.Println("error in save output file for new problem", err)
+				errorMsg = "An unknown error has been occurred!"
 			} else {
 				return c.Redirect(fmt.Sprintf("/problemset/%d", problem.ID))
 			}
@@ -365,7 +375,7 @@ func handleAddProblemView(c *fiber.Ctx) error {
 		}
 	}
 	return render(c, "add_problem", fiber.Map{
-		"PageTitle":   "CloudiJudge | ساخت سوال",
+		"PageTitle":   "CloudiJudge | add problem",
 		"Error":       errorMsg,
 		"Title":       c.FormValue("title"),
 		"Statement":   c.FormValue("statement"),
@@ -507,12 +517,12 @@ func showProblemView(c *fiber.Ctx) error {
 	var user User
 	result := db.First(&user, userID)
 	if result.Error != nil {
-		return c.Status(fiber.StatusInternalServerError).SendString("خطا در دریافت اطلاعات کاربر")
+		return c.Redirect("/login")
 	}
 
 	// db.Save(&user)
 	return render(c, "show_problem", fiber.Map{
-		"PageTitle": "CloudiJudge | مشاهده سوال",
+		"PageTitle": "CloudiJudge | view problem",
 		"Problem":   problem,
 		"User":      user,
 	})
@@ -538,7 +548,7 @@ func downloadProblemInOutFiles(c *fiber.Ctx) error {
 	var user User
 	result := db.First(&user, userID)
 	if result.Error != nil {
-		return c.Status(fiber.StatusInternalServerError).SendString("خطا در دریافت اطلاعات کاربر")
+		return c.Redirect("/login")
 	}
 	if !problem.IsPublished && problem.OwnerID != user.ID && !user.IsAdmin {
 		return error_403(c)
@@ -573,10 +583,10 @@ func handlePublishProblemView(c *fiber.Ctx) error {
 	var user User
 	result := db.First(&user, userID)
 	if result.Error != nil {
-		return c.Status(fiber.StatusInternalServerError).SendString("خطا در دریافت اطلاعات کاربر")
+		return c.Redirect("/login")
 	}
 	if !user.IsAdmin {
-		return error_403(c) // change to no permission
+		return error_403(c)
 	}
 
 	if command == "publish" {
@@ -614,7 +624,7 @@ func handleSubmitProblemView(c *fiber.Ctx) error {
 	var user User
 	result := db.First(&user, userID)
 	if result.Error != nil {
-		return c.Status(fiber.StatusInternalServerError).SendString("خطا در دریافت اطلاعات کاربر")
+		return c.Redirect("/login")
 	}
 	submission := Submission{
 		Status:    "waiting",
@@ -623,27 +633,28 @@ func handleSubmitProblemView(c *fiber.Ctx) error {
 		ProblemID: problem.ID,
 	}
 	var errorMsg string
-	// Save the problem to the database
+
 	if err := db.Create(&submission).Error; err != nil {
-		errorMsg = "خطایی در ذخیره ارسال رخ داد."
+		log.Println("error in save new submission", err)
+		errorMsg = "An unknown error has been occurred!"
 
 	} else {
 		problemDir := filepath.Join(os.Getenv("PROBLEM_UPLOAD_FOLDER"), fmt.Sprintf("%d", problem.ID))
 
 		if submittedFile, err := c.FormFile("submit_file"); err != nil {
-			fmt.Println(err)
-			errorMsg = "فایل ارسالی نامعتبر است."
+			errorMsg = "Invalid submission code file!"
 
 		} else if ext := filepath.Ext(submittedFile.Filename); ext != ".go" {
-			errorMsg = "فقط فایل های گولنگ قابل قبول هستند."
+			errorMsg = "Submission code is not GO!"
 
 		} else if submittedFile.Size > 10*1024*1024 {
-			errorMsg = "حجم فایل ارسالی نباید بیشتر از 10 مگابایت باشد."
+			errorMsg = "Submission code size most be lower than 10Mb!"
 
 		} else if err := c.SaveFile(submittedFile,
 			filepath.Join(problemDir, strconv.Itoa(int(submission.ID))+".go")); err != nil {
 
-			errorMsg = "خطایی در ذخیره فایل ارسالی رخ داد."
+			log.Println("error in save submission code file", err)
+			errorMsg = "An unknown error has been occurred!"
 
 		} else {
 			user.SolveAttemps++
@@ -654,7 +665,7 @@ func handleSubmitProblemView(c *fiber.Ctx) error {
 	}
 	db.Delete(&submission)
 	return render(c, "show_problem", fiber.Map{
-		"PageTitle": "CloudiJudge | مشاهده سوال",
+		"PageTitle": "CloudiJudge | show problem",
 		"Error":     errorMsg,
 		"Problem":   problem,
 		"User":      user,
@@ -762,11 +773,11 @@ func runCodeCallbackView(c *fiber.Ctx) error {
 	var data code_runner.ResultData
 
 	if err := c.BodyParser(&data); err != nil {
-		return c.Status(fiber.StatusBadRequest).SendString("")
+		return error_404(c)
 	}
 	var submission Submission
 	if err := db.Where("token = ?", data.CallbackToken).Preload("Owner").First(&submission).Error; err != nil {
-		return c.Status(fiber.StatusBadRequest).SendString("")
+		return error_404(c)
 	}
 	submission.Status = data.Status
 	if data.Status == "Accepted" {

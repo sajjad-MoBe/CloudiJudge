@@ -5,9 +5,13 @@
         <h1 class="error-title">403 Forbidden</h1>
         <p class="error-message">Access Denied</p>
         <p class="error-description">
-            You don't have permission to access this page. Please make sure you're logged in with the correct credentials.
+            {{ if .Message }}
+                {{ .Message }}
+            {{ else }}
+                You don't have permission to access this page. Please make sure you're logged in with the correct credentials.
+            {{ end }}
         </p>
-        <a href="/" class="home-btn">
+        <a href="/problemsset" class="home-btn">
             <i class="fas fa-home"></i>
             Return to Home
         </a>
