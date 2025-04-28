@@ -229,7 +229,7 @@ func sendRunCallBack(result string, run Run) {
 		return
 	}
 
-	resp, err := http.Post("http://judge:80/code/callback", "application/json", bytes.NewBuffer(jsonData))
+	resp, err := http.Post(fmt.Sprintf("http://judge:%s/code/callback", os.Getenv("PORT")), "application/json", bytes.NewBuffer(jsonData))
 	if err != nil {
 		fmt.Println("Error sending request:", err)
 		return

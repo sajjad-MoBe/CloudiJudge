@@ -50,6 +50,7 @@ services:
             PROBLEM_UPLOAD_FOLDER: ${PROBLEM_UPLOAD_FOLDER}
             PROBLEM_UPLOAD_FOLDER_SRC: ${PROBLEM_UPLOAD_FOLDER_SRC} # abs path on host
             MAX_CONCURRENT_RUNS: ${MAX_CONCURRENT_RUNS}
+            POST: ${PORT}
         expose:
             - 2
         volumes:
