@@ -151,27 +151,32 @@ func landingView(c *fiber.Ctx) error {
 }
 
 func showProfileView(c *fiber.Ctx) error {
-	id, err := strconv.Atoi(c.Params("id"))
-	if err != nil {
-		return error_404(c)
-	}
-
-	userID := uint(id)
-	var profileUser User
-	result := db.First(&profileUser, userID)
-	if result.Error != nil {
-		return error_404(c)
-	}
-
-	userID = c.Locals("user_id").(uint)
+	userID := c.Locals("user_id").(uint)
 	var user User
-	result = db.First(&user, userID)
+	result := db.First(&user, userID)
 	if result.Error != nil {
-		return error_404(c)
+		return c.Redirect("/login")
 	}
+
+	var profileUser User
+	if c.Path() == "/user" {
+		profileUser = user
+	} else {
+		id, err := strconv.Atoi(c.Params("id"))
+		if err != nil {
+			return error_404(c)
+		}
+		userID = uint(id)
+		result = db.First(&profileUser, userID)
+		if result.Error != nil {
+			return error_404(c)
+		}
+	}
+	fmt.Println(c.Path(), profileUser.ID)
+
 	var submissions []Submission
 
-	err = db.Model(&Submission{}).
+	err := db.Model(&Submission{}).
 		Where("owner_id = ?", profileUser.ID).
 		Limit(3).
 		Order("created_at DESC").
@@ -708,22 +713,31 @@ func handleSubmitProblemView(c *fiber.Ctx) error {
 }
 
 func submissionsView(c *fiber.Ctx) error {
-
-	id, err := strconv.Atoi(c.Params("id"))
-	if err != nil {
-		return error_404(c)
-	}
-	userID := uint(id)
-	var targetUser User
-	result := db.First(&targetUser, userID)
-	if result.Error != nil {
-		fmt.Println(result.Error)
-		return error_404(c)
-	}
-
-	userID = c.Locals("user_id").(uint)
+	fmt.Println("here")
+	userID := c.Locals("user_id").(uint)
 	var thisUser User
-	result = db.First(&thisUser, userID)
+	result := db.First(&thisUser, userID)
+	if result.Error != nil {
+		return c.Redirect("/login")
+	}
+
+	var targetUser User
+	if c.Path() == "/user/submissions" {
+		targetUser = thisUser
+	} else {
+		id, err := strconv.Atoi(c.Params("id"))
+		if err != nil {
+			return error_404(c)
+		}
+		userID = uint(id)
+
+		result = db.First(&targetUser, userID)
+		if result.Error != nil {
+			fmt.Println(result.Error)
+			return error_404(c)
+		}
+	}
+
 	if thisUser.ID != targetUser.ID {
 		if result.Error == nil {
 			if !thisUser.IsAdmin {
@@ -745,7 +759,7 @@ func submissionsView(c *fiber.Ctx) error {
 	var submissions []Submission
 	var total int64
 
-	err = db.Model(&Submission{}).
+	err := db.Model(&Submission{}).
 		Where("owner_id = ?", targetUser.ID).
 		Count(&total).
 		Offset(offset).Limit(limit).
