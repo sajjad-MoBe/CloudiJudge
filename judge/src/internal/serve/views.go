@@ -31,7 +31,8 @@ func error_404(c *fiber.Ctx, messages ...string) error {
 		message = messages[0]
 	}
 	return c.Status(404).Render("pages/error_404", fiber.Map{
-		"Message": message,
+		"PageTitle": "Page Not Found",
+		"Message":   message,
 	}, "layouts/error")
 }
 
@@ -41,7 +42,8 @@ func error_403(c *fiber.Ctx, messages ...string) error {
 		message = messages[0]
 	}
 	return c.Status(403).Render("pages/error_403", fiber.Map{
-		"Message": message,
+		"PageTitle": "Access Denied",
+		"Message":   message,
 	}, "layouts/error")
 }
 
