@@ -778,6 +778,7 @@ func submissionsView(c *fiber.Ctx) error {
 		"Total":       int(total),
 		"Limit":       limit,
 		"Offset":      offset,
+		"CurrentPage": (offset / limit) + 1,
 		"Pages":       (int(total) + limit - 1) / limit, // Total pages
 	})
 }
