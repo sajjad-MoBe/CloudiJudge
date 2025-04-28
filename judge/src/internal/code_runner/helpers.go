@@ -23,7 +23,7 @@ type ResultData struct {
 }
 
 func runCodeInsideContainer(run Run) string {
-	timeLimit := fmt.Sprintf("%.3f", float64(run.TimeLimitMs+5000)/float64(1000))
+	timeLimit := fmt.Sprintf("%.3f", float64(run.TimeLimitMs)/float64(1000))
 
 	ctx := context.Background()
 	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
