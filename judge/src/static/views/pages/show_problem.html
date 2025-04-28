@@ -9,6 +9,9 @@
                     <a class="publish-problem-btn" href="/problemset/{{.Problem.ID}}/publish">Publish</a>
                 {{ end }}
             {{ end }}
+            {{ if or .User.IsAdmin (eq .Problem.OwnerID .User.ID) }}
+                <a class="edit-problem-btn" href="/problemset/{{.Problem.ID}}/edit">Edit</a>
+            {{ end }}
         </h1>
         
         <div style="display: flex; justify-content: space-between;">

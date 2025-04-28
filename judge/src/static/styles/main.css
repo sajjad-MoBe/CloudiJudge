@@ -733,6 +733,15 @@ select:valid + .error-message::after {
     font-size: 13px;
     color: #34070d;
 }
+.edit-problem-btn {
+    display: inline-block;
+    padding: 2px 6px;
+    background-color: #6ddedc;
+    border: 1px solid #46d3d5;
+    border-radius: 4px;
+    font-size: 13px;
+    color: #34070d;
+}
 .publish-problem-btn {
     display: inline-block;
     padding: 2px 6px;
