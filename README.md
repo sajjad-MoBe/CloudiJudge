@@ -156,7 +156,6 @@ Follow these steps to set up and run the **CloudiJudge** project:
 	```
 
   
-	
 	- To run it in the background (detached mode), use:
 
 		``docker-compose up --build --scale code-runner=3 -d``
@@ -167,6 +166,11 @@ Follow these steps to set up and run the **CloudiJudge** project:
 
 4.  **Verify the Setup**
 	Once the containers are up, the application should be running and accessible as configured.
+	- To create an Admin user you can use this command:
+		``docker-compose exec judge create-admin --email=sajjad@beigi.com``
+	
+	- You also can fill database with test data using (erase=true for delete test datas):
+		``docker-compose exec judge load-test-data erase=false``
 
 
 ## Contributors

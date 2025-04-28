@@ -718,7 +718,6 @@ func handleSubmitProblemView(c *fiber.Ctx) error {
 }
 
 func submissionsView(c *fiber.Ctx) error {
-	fmt.Println("here")
 	userID := c.Locals("user_id").(uint)
 	var thisUser User
 	result := db.First(&thisUser, userID)
