@@ -249,14 +249,13 @@ func demoteUserView(c *fiber.Ctx) error {
 }
 
 func problemsetView(c *fiber.Ctx) error {
-
 	userID := c.Locals("user_id").(uint)
-
 	var user User
 	result := db.First(&user, userID)
 	if result.Error != nil {
 		return c.Redirect("/login")
 	}
+	myproblems := c.Query("myproblems", "-")
 	limit := c.QueryInt("limit", 10)  // Default limit = 10
 	offset := c.QueryInt("offset", 0) // Default offset = 0
 
@@ -271,28 +270,48 @@ func problemsetView(c *fiber.Ctx) error {
 
 	var problems []Problem
 	total := publishedProblemsCount
-
+	var err error
 	start := time.Now()
-
-	err := db.Model(&Problem{}).
-		Select("id, title, statement, is_published, published_at").
-		Where("is_published = ?", true).
-		Offset(offset).Limit(limit).
-		Order("published_at DESC").
-		Find(&problems).Error
+	if myproblems == "yes" {
+		if user.IsAdmin {
+			err = db.Model(&Problem{}).
+				Select("id, title, statement, is_published, published_at").
+				// Where("is_published = ?", true).
+				Offset(offset).Limit(limit).
+				Order("published_at DESC").
+				Find(&problems).Error
+		} else {
+			err = db.Model(&Problem{}).
+				Select("id, title, statement, is_published, published_at").
+				Where("owner_id = ?", user.ID).
+				Offset(offset).Limit(limit).
+				Order("published_at DESC").
+				Find(&problems).Error
+		}
+	} else {
+		myproblems = "no"
+		err = db.Model(&Problem{}).
+			Select("id, title, statement, is_published, published_at").
+			Where("is_published = ?", true).
+			Offset(offset).Limit(limit).
+			Order("published_at DESC").
+			Find(&problems).Error
+	}
 
 	duration := time.Since(start)
 	fmt.Printf("Time taken: %d ms\n", duration.Milliseconds())
+	fmt.Println(len(problems))
 
 	if err != nil {
 		return render(c.Status(fiber.StatusInternalServerError), "problemset", fiber.Map{
-			"PageTitle": "CloudiJudge | problemset",
-			"User":      user,
-			"Problems":  problems,
-			"Total":     int(total),
-			"Limit":     0,
-			"Offset":    0,
-			"Pages":     0,
+			"PageTitle":  "CloudiJudge | problemset",
+			"User":       user,
+			"Problems":   problems,
+			"Total":      int(total),
+			"Limit":      0,
+			"Offset":     0,
+			"Pages":      0,
+			"Myproblems": myproblems,
 		})
 	}
 
@@ -305,6 +324,7 @@ func problemsetView(c *fiber.Ctx) error {
 		"Offset":      offset,
 		"CurrentPage": (offset / limit) + 1,
 		"Pages":       (int(total) + limit - 1) / limit, // Total pages
+		"Myproblems":  myproblems,
 	})
 }
 
@@ -606,7 +626,12 @@ func handlePublishProblemView(c *fiber.Ctx) error {
 		problem.IsPublished = false
 	}
 	db.Save(&problem)
-
+	if c.Query("next", "-") == "problemset" {
+		if c.Query("myproblems", "-") == "yes" {
+			return c.Redirect("/problemset?myproblems=yes")
+		}
+		return c.Redirect("/problemset")
+	}
 	return c.Redirect(fmt.Sprintf("/problemset/%d", problem.ID))
 }
 

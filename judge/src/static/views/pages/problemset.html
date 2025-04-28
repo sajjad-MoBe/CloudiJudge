@@ -27,9 +27,9 @@
                         </div>
                         {{ if $.User.IsAdmin }}
                             {{ if .IsPublished }}
-                                <a href="/problemset/{{.Problem.ID}}/unpublish" class="unpublish-problem-btn">UnPublish</a>
+                                <a href="/problemset/{{.ID}}/unpublish?next=problemset&myproblems={{$.Myproblems}}" class="unpublish-problem-btn">UnPublish</a>
                             {{ else }}
-                                <a href="/problemset/{{.Problem.ID}}/publish" class="publish-problem-btn">Publish</a>
+                                <a href="/problemset/{{.ID}}/publish?next=problemset&myproblems={{$.Myproblems}}" class="publish-problem-btn">Publish</a>
                             {{ end }}
                         {{ end }}
                     </div>
