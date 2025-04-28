@@ -123,7 +123,8 @@ func handleSignupView(c *fiber.Ctx) error {
 			Password: string(hashedPassword),
 		}
 		db.Create(&user)
-		db.Commit()
+		db.Save(&user)
+
 		return c.Redirect("/login?new=yes")
 
 	}
