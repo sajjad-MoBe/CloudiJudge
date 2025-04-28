@@ -274,21 +274,24 @@ func problemsetView(c *fiber.Ctx) error {
 	}
 
 	var problems []Problem
-	total := publishedProblemsCount
+	total := int64(publishedProblemsCount)
 	var err error
-	start := time.Now()
+	// start := time.Now()
 	if myproblems == "yes" {
 		if user.IsAdmin {
+			total = int64(publishedProblemsCount + notPublishedProblemsCount)
 			err = db.Model(&Problem{}).
 				Select("id, title, statement, is_published, published_at").
 				// Where("is_published = ?", true).
 				Offset(offset).Limit(limit).
 				Order("published_at DESC").
 				Find(&problems).Error
+
 		} else {
 			err = db.Model(&Problem{}).
 				Select("id, title, statement, is_published, published_at").
 				Where("owner_id = ?", user.ID).
+				Count(&total).
 				Offset(offset).Limit(limit).
 				Order("published_at DESC").
 				Find(&problems).Error
@@ -303,8 +306,8 @@ func problemsetView(c *fiber.Ctx) error {
 			Find(&problems).Error
 	}
 
-	duration := time.Since(start)
-	fmt.Printf("Time taken: %d ms\n", duration.Milliseconds())
+	// duration := time.Since(start)
+	// fmt.Printf("Time taken: %d ms\n", duration.Milliseconds())
 
 	if err != nil {
 		return render(c.Status(fiber.StatusInternalServerError), "problemset", fiber.Map{
@@ -631,8 +634,10 @@ func handlePublishProblemView(c *fiber.Ctx) error {
 			problem.PublishedAt = &now
 		}
 		publishedProblemsCount++
+		notPublishedProblemsCount--
 	} else {
 		publishedProblemsCount--
+		notPublishedProblemsCount++
 		problem.IsPublished = false
 	}
 	db.Save(&problem)
