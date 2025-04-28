@@ -16,7 +16,7 @@ import (
 
 // Template handling function
 func render(c *fiber.Ctx, name string, data interface{}) error {
-	if name[:4] == "sign" {
+	if name[:4] == "sign" || name[:3] == "log" {
 		return c.Render("pages/"+name, data, "layouts/auth")
 
 	} else if name == "landing" {
