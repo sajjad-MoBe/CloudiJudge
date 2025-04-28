@@ -44,6 +44,7 @@
                 </div>
             </div>
         {{end}}
+        {{if gt .Total 0}}
             <div class="pagination">
                 {{if gt .Offset 0}}
                     <a class="page-btn" href="/user/{{.ProfileUser.ID}}/submissions?limit={{.Limit}}&offset={{sub .Offset .Limit}}" disabled>
@@ -65,7 +66,8 @@
                     </button>
                 {{end}}
             
-        </div>
+            </div>
+        {{ end }}
     </div>
     
 </body>

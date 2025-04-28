@@ -38,32 +38,30 @@
         {{ end }}
 
     <!-- Pagination -->
-    <div class="pagination">
-        {{if gt .Offset 0}}
-            
-            <a class="page-btn" href='/problemset?limit={{.Limit}}&offset={{sub .Offset .Limit}}{{if eq .Myproblems "yes"}}&myproblems=yes{{end}}' disabled>
-                <i class="fas fa-chevron-left"></i>Previous</a>
-        {{ else }}
-            <button class="page-btn" disabled>
-                <i class="fas fa-chevron-left"></i> Previous
-            </button>
-        {{end}}
+    {{if gt .Total 0}}
+        <div class="pagination">
+            {{if gt .Offset 0}}
+                
+                <a class="page-btn" href='/problemset?limit={{.Limit}}&offset={{sub .Offset .Limit}}{{if eq .Myproblems "yes"}}&myproblems=yes{{end}}' disabled>
+                    <i class="fas fa-chevron-left"></i>Previous</a>
+            {{ else }}
+                <button class="page-btn" disabled>
+                    <i class="fas fa-chevron-left"></i> Previous
+                </button>
+            {{end}}
 
-        <div class="page-info">Page {{ .CurrentPage }} of {{ .Pages }}</div>
-        {{if lt .CurrentPage .Pages}}
-                <a href='/problemset?limit={{.Limit}}&offset={{add .Offset .Limit}}{{if eq .Myproblems "yes"}}&myproblems=yes{{end}}' class="page-btn">Next
+            <div class="page-info">Page {{ .CurrentPage }} of {{ .Pages }}</div>
+            {{if lt .CurrentPage .Pages}}
+                    <a href='/problemset?limit={{.Limit}}&offset={{add .Offset .Limit}}{{if eq .Myproblems "yes"}}&myproblems=yes{{end}}' class="page-btn">Next
+                        <i class="fas fa-chevron-right"></i>
+                    </a>
+            {{ else }}
+                <button class="page-btn" disabled>Next
                     <i class="fas fa-chevron-right"></i>
-                </a>
-        {{ else }}
-            <button class="page-btn" disabled>Next
-                <i class="fas fa-chevron-right"></i>
-            </button>
-        {{end}}
-        <!-- <button class="" disabled> -->
-            <!-- <i class="fas fa-chevron-left"></i> Previous
-        </button>
-        <div class="page-info">Page 1 of 2</div> -->
-    </div>
+                </button>
+            {{end}}
+        </div>
+    {{ end }}
 </div>
 
 <script>
