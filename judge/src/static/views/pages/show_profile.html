@@ -51,7 +51,7 @@
                 <div class="stat-label">Solved</div>
             </div>
             <div class="stat-item">
-                <div class="stat-value" id="success-rate">{{div .ProfileUser.SuccessAttemps .ProfileUser.SolveAttemps}}%</div>
+                <div class="stat-value" id="success-rate">{{ div (mul .ProfileUser.SuccessAttemps 100) .ProfileUser.SolveAttemps }}%</div>
                 <div class="stat-label">Success Rate</div>
             </div>
         </div>
@@ -136,7 +136,7 @@
             }
             if (attemptedCount){
                 document.getElementById('progress-fill').style.width = solvedCount/attemptedCount+"%"
-                if (solvedCount/attemptedCount >= 50) {
+                if (solvedCount*100/attemptedCount >= 50) {
                     document.getElementById('consistency-badge').classList.add('active');
                 }
             }
