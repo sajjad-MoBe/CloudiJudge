@@ -360,7 +360,7 @@ func handleAddProblemView(c *fiber.Ctx) error {
 	} else if parseInt(c.FormValue("memory_limit")) <= 0 {
 		errorMsg = "Memory limit most be a positive number."
 
-	} else if parseInt(c.FormValue("memory_limit")) <= 500 {
+	} else if parseInt(c.FormValue("memory_limit")) >= 500 {
 		errorMsg = "Memory limit most be less than 500."
 
 	} else {
